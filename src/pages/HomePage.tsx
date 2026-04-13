@@ -83,20 +83,22 @@ export function HomePage() {
                 <span>Agricultural Products</span>
               </h1>
               <p className="hero-lead">
-                Discover catalog products, submit bulk order requests, and track order status from one public
-                customer experience.
+                Discover catalog products, submit bulk order requests, join investor programs, and onboard as a
+                farming partner from one public experience.
               </p>
               <div className="hero-feature-list">
-                {["Live product catalog", "Bulk order request", "Public order tracking", "Support-first workflow"].map((item) => (
+                {["Live product catalog", "Investor onboarding", "Farmer registration", "My account order history"].map((item) => (
                   <div key={item} className="hero-feature-item">
                     <span className="hero-check">OK</span>
                     <span>{item}</span>
                   </div>
                 ))}
               </div>
-              <div className="hero-actions">
-                <Link className="button button-primary button-large" to="/order-request">Request Bulk Order</Link>
-                <Link className="button button-outline button-large" to="/track-order">Track Order</Link>
+              <div className="hero-actions hero-actions-uniform">
+                <Link className="button button-primary button-large hero-cta" to="/join-us?type=investor">Buy / Invest Now</Link>
+                <Link className="button button-primary button-large hero-cta" to="/join-us?type=farmer">Join as Farmer</Link>
+                <Link className="button button-primary button-large hero-cta" to="/order-request">Request Bulk Order</Link>
+                <Link className="button button-primary button-large hero-cta" to="/portal/login">My Account</Link>
               </div>
             </div>
 
@@ -105,9 +107,9 @@ export function HomePage() {
               <div className="hero-panel-card">
                 <img src="/assets/hero-card.jpg" alt="Fresh Produce" />
                 <div className="hero-panel-copy">
-                  <h3>Public Experience</h3>
-                  <div className="hero-panel-list">
-                    {["Catalog browsing", "Order request flow", "Tracking by order number", "Marketing and contact pages"].map((item) => (
+                    <h3>Public Experience</h3>
+                    <div className="hero-panel-list">
+                    {["Catalog browsing", "Investor and farmer intake", "Order request and account history", "Marketing and contact pages"].map((item) => (
                       <div key={item} className="hero-panel-item">
                         <span className="hero-panel-bullet">-</span>
                         <span>{item}</span>
@@ -230,6 +232,36 @@ export function HomePage() {
                 <p>{description}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="section-heading">
+            <span className="section-badge">Programs</span>
+            <h2>Investor, Farmer, and Collection Hub Programs</h2>
+            <p>Choose the journey that fits your role in the FVP Purepick ecosystem.</p>
+          </div>
+          <div className="service-grid">
+            <article className="service-card">
+              <div className="service-icon">I</div>
+              <h3>Investor Intake</h3>
+              <p>Register investment intent and KYC details first; payment is handled after verification.</p>
+              <p><Link to="/join-us?type=investor">Open investor form</Link></p>
+            </article>
+            <article className="service-card">
+              <div className="service-icon">F</div>
+              <h3>Farmer Onboarding</h3>
+              <p>Share farm profile, crop details, and required documents for partner onboarding.</p>
+              <p><Link to="/join-us?type=farmer">Open farmer form</Link></p>
+            </article>
+            <article className="service-card">
+              <div className="service-icon">C</div>
+              <h3>Collection Hub Setup</h3>
+              <p>Open a local collection point and onboard for procurement, grading, and dispatch coordination.</p>
+              <p><Link to="/join-us?type=collection-hub">Open collection hub form</Link></p>
+            </article>
           </div>
         </div>
       </section>
