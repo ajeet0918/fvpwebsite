@@ -124,16 +124,36 @@ export function OrderRequestPage() {
 
             {orderForm.items.map((item, index) => (
               <div key={`${index}-${item.productSlug}`} className="line-item-row">
-                <label>
+                <label className="line-item-product-cell line-item-field">
                   Product
                   <select value={item.productSlug} onChange={(event) => setItemField(index, "productSlug", event.target.value)} required>
                     <option value="">Select a product</option>
                     {products.map((product) => <option key={product.id} value={product.slug}>{product.name}</option>)}
                   </select>
+                  <small className="line-item-price-hint line-item-price-hint-empty">-</small>
                 </label>
-                <label>Quantity<input type="number" min="1" value={item.quantity} onChange={(event) => setItemField(index, "quantity", event.target.value)} required /></label>
-                <label>Unit<input value={item.unit} onChange={(event) => setItemField(index, "unit", event.target.value)} required /></label>
-                <button type="button" className="line-item-remove" disabled={orderForm.items.length === 1} onClick={() => removeItemRow(index)}>Remove</button>
+                <label className="line-item-field">
+                  Quantity
+                  <input type="number" min="1" value={item.quantity} onChange={(event) => setItemField(index, "quantity", event.target.value)} required />
+                  <small className="line-item-price-hint line-item-price-hint-empty">-</small>
+                </label>
+                <label className="line-item-field">
+                  Unit
+                  <input value={item.unit} onChange={(event) => setItemField(index, "unit", event.target.value)} required />
+                  <small className="line-item-price-hint line-item-price-hint-empty">-</small>
+                </label>
+                <div className="line-item-action-cell">
+                  <span>Action</span>
+                  <button
+                    type="button"
+                    className="line-item-remove"
+                    disabled={orderForm.items.length === 1}
+                    onClick={() => removeItemRow(index)}
+                  >
+                    Remove
+                  </button>
+                  <small className="line-item-price-hint line-item-price-hint-empty">-</small>
+                </div>
               </div>
             ))}
           </div>
