@@ -1,22 +1,32 @@
-import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const navLinks = [
-  { name: "Home", type: "route", path: "/" },
-  { name: "Products", type: "anchor", path: "/#products" },
-  { name: "About", type: "anchor", path: "/#about" },
-  { name: "Order Request", type: "route", path: "/order-request" },
-  { name: "Track Order", type: "route", path: "/track-order" },
-  { name: "Contact", type: "anchor", path: "/#contact" }
+  { key: "home", name: "Home", type: "route", path: "/" },
+  { key: "products", name: "Products", type: "anchor", path: "/#products", sectionId: "products" },
+  { key: "about", name: "About", type: "anchor", path: "/#about", sectionId: "about" },
+  { key: "contact", name: "Contact", type: "anchor", path: "/#contact", sectionId: "contact" },
+  { key: "join", name: "Join With Us", type: "route", path: "/join-us" },
+  { key: "order", name: "Order Request", type: "route", path: "/order-request" },
+  { key: "portal", name: "My Account", type: "route", path: "/portal/login" }
 ] as const;
 
-function navClass(isActive: boolean) {
-  return isActive ? "nav-link nav-link-active" : "nav-link";
-}
-
 export function PublicLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+
+  function scrollToSection(sectionId: string, behavior: ScrollBehavior = "smooth") {
+    const target = document.getElementById(sectionId);
+    if (!target) {
+      return;
+    }
+    const navOffset = 96;
+    const y = target.getBoundingClientRect().top + window.scrollY - navOffset;
+    window.scrollTo({ top: Math.max(0, y), behavior });
+  }
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -24,6 +34,94 @@ export function PublicLayout() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (location.pathname !== "/") {
+      return;
+    }
+
+    const sectionOrder = ["contact", "about", "products"] as const;
+    const detectSection = () => {
+      const offsetY = window.scrollY + 140;
+      const found = sectionOrder.find((sectionId) => {
+        const element = document.getElementById(sectionId);
+        if (!element) return false;
+        return offsetY >= element.offsetTop;
+      });
+      setActiveSection(found ?? "home");
+    };
+
+    detectSection();
+    window.addEventListener("scroll", detectSection);
+    window.addEventListener("hashchange", detectSection);
+    return () => {
+      window.removeEventListener("scroll", detectSection);
+      window.removeEventListener("hashchange", detectSection);
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (location.pathname !== "/" || !location.hash) {
+      return;
+    }
+    const sectionId = location.hash.replace("#", "");
+    if (!sectionId) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      scrollToSection(sectionId, "smooth");
+      setActiveSection(sectionId);
+    }, 40);
+
+    return () => window.clearTimeout(timer);
+  }, [location.hash, location.pathname]);
+
+  const activeKey = useMemo(() => {
+    if (location.pathname === "/") {
+      if (location.hash === "#products") return "products";
+      if (location.hash === "#about") return "about";
+      if (location.hash === "#contact") return "contact";
+      return activeSection;
+    }
+    if (location.pathname.startsWith("/join-us")) return "join";
+    if (location.pathname.startsWith("/order-request")) return "order";
+    if (location.pathname.startsWith("/portal")) return "portal";
+    return "";
+  }, [activeSection, location.hash, location.pathname]);
+
+  function navClass(linkKey: string) {
+    return activeKey === linkKey ? "nav-link nav-link-active" : "nav-link";
+  }
+
+  function handleHomeClick(event?: MouseEvent<HTMLAnchorElement>) {
+    const isAlreadyHomeTop = location.pathname === "/" && !location.hash;
+    if (isAlreadyHomeTop && event) {
+      event.preventDefault();
+    }
+
+    setIsMobileMenuOpen(false);
+    window.setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 0);
+  }
+
+  function handleSectionClick(
+    event: MouseEvent<HTMLAnchorElement>,
+    sectionId: string
+  ) {
+    event.preventDefault();
+    setIsMobileMenuOpen(false);
+
+    if (location.pathname === "/") {
+      navigate({ pathname: "/", hash: `#${sectionId}` }, { replace: false });
+      scrollToSection(sectionId, "smooth");
+      setActiveSection(sectionId);
+      return;
+    }
+
+    navigate({ pathname: "/", hash: `#${sectionId}` }, { replace: false });
+  }
 
   return (
     <div className="site-shell">
@@ -45,16 +143,22 @@ export function PublicLayout() {
                 link.type === "route"
                   ? (
                     <NavLink
-                      key={link.name}
+                      key={link.key}
                       to={link.path}
                       end={link.path === "/"}
-                      className={({ isActive }) => navClass(isActive)}
+                      className={navClass(link.key)}
+                      onClick={link.key === "home" ? handleHomeClick : () => setIsMobileMenuOpen(false)}
                     >
                       {link.name}
                     </NavLink>
                   )
                   : (
-                    <a key={link.name} href={link.path} className="nav-link">
+                    <a
+                      key={link.key}
+                      href={link.path}
+                      className={navClass(link.key)}
+                      onClick={(event) => handleSectionClick(event, link.sectionId)}
+                    >
                       {link.name}
                     </a>
                   )
@@ -77,21 +181,21 @@ export function PublicLayout() {
               link.type === "route"
                 ? (
                   <NavLink
-                    key={link.name}
+                    key={link.key}
                     to={link.path}
                     end={link.path === "/"}
-                    className="mobile-link"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={activeKey === link.key ? "mobile-link nav-link-active" : "mobile-link"}
+                    onClick={link.key === "home" ? handleHomeClick : () => setIsMobileMenuOpen(false)}
                   >
                     {link.name}
                   </NavLink>
                 )
                 : (
                   <a
-                    key={link.name}
+                    key={link.key}
                     href={link.path}
-                    className="mobile-link"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={activeKey === link.key ? "mobile-link nav-link-active" : "mobile-link"}
+                    onClick={(event) => handleSectionClick(event, link.sectionId)}
                   >
                     {link.name}
                   </a>
@@ -119,7 +223,7 @@ export function PublicLayout() {
             </NavLink>
             <p>
               Wholesale agricultural products for businesses and growers. Public website includes catalog,
-              order request, and order tracking.
+              order request, and account-based order history.
             </p>
           </div>
 
@@ -129,9 +233,10 @@ export function PublicLayout() {
               <li><NavLink to="/">Home</NavLink></li>
               <li><a href="/#products">Products</a></li>
               <li><a href="/#about">About</a></li>
-              <li><NavLink to="/order-request">Order Request</NavLink></li>
-              <li><NavLink to="/track-order">Track Order</NavLink></li>
               <li><a href="/#contact">Contact</a></li>
+              <li><NavLink to="/join-us">Join With Us</NavLink></li>
+              <li><NavLink to="/order-request">Order Request</NavLink></li>
+              <li><NavLink to="/portal/login">My Account</NavLink></li>
             </ul>
           </div>
 
@@ -139,8 +244,11 @@ export function PublicLayout() {
             <h3>Public Features</h3>
             <ul>
               <li><span>Product catalog</span></li>
+              <li><span>Investor onboarding</span></li>
+              <li><span>Farmer registration</span></li>
+              <li><span>OTP account login</span></li>
               <li><span>Bulk order request</span></li>
-              <li><span>Public order tracking</span></li>
+              <li><span>Order history in account</span></li>
               <li><span>Contact and support</span></li>
             </ul>
           </div>

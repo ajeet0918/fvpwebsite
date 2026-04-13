@@ -12,7 +12,7 @@ const initialOrderForm: OrderFormState = {
   state: "",
   postalCode: "",
   customerNotes: "",
-  items: [{ productSlug: "", quantity: "1", unit: "kg" }]
+  items: [{ productSlug: "", quantity: "1", unit: "" }]
 };
 
 export function OrderRequestPage() {
@@ -49,10 +49,24 @@ export function OrderRequestPage() {
     }));
   }
 
+  function selectProductForItem(index: number, slug: string) {
+    const selectedProduct = products.find((product) => product.slug === slug);
+    setOrderForm((current) => ({
+      ...current,
+      items: current.items.map((item, itemIndex) => itemIndex === index
+        ? {
+            ...item,
+            productSlug: slug,
+            unit: selectedProduct?.priceUnit ?? ""
+          }
+        : item)
+    }));
+  }
+
   function addItemRow() {
     setOrderForm((current) => ({
       ...current,
-      items: [...current.items, { productSlug: "", quantity: "1", unit: "kg" }]
+      items: [...current.items, { productSlug: "", quantity: "1", unit: "" }]
     }));
   }
 
@@ -79,7 +93,7 @@ export function OrderRequestPage() {
       });
 
       setOrderForm(initialOrderForm);
-      setOrderFormMessage(`Order request created. Tracking ID: ${created.orderNumber}`);
+      setOrderFormMessage(`Order request created. Reference: ${created.orderNumber}. You can now login to My Account with OTP to view your order journey.`);
     } catch (error) {
       setOrderFormMessage(readErrorMessage(error, "Unable to create order request."));
     } finally {
@@ -94,10 +108,10 @@ export function OrderRequestPage() {
         <div className="section-heading section-heading-left">
           <span className="section-badge">Request Order</span>
           <h2>Create a Bulk Order Request</h2>
-          <p>This page is customer-facing. You can track the order separately using your tracking ID.</p>
+          <p>After request submission, access your order timeline in My Account using OTP login.</p>
         </div>
 
-        <form className="order-form" onSubmit={handleOrderSubmit}>
+        <form className="order-form order-request-form" onSubmit={handleOrderSubmit}>
           <div className="form-grid two-up">
             <label>Full Name<input value={orderForm.fullName} onChange={(event) => setOrderField("fullName", event.target.value)} required /></label>
             <label>Company Name<input value={orderForm.companyName} onChange={(event) => setOrderField("companyName", event.target.value)} required /></label>
@@ -122,20 +136,57 @@ export function OrderRequestPage() {
               <button type="button" className="button button-secondary" onClick={addItemRow}>Add Item</button>
             </div>
 
-            {orderForm.items.map((item, index) => (
-              <div key={`${index}-${item.productSlug}`} className="line-item-row">
-                <label>
-                  Product
-                  <select value={item.productSlug} onChange={(event) => setItemField(index, "productSlug", event.target.value)} required>
-                    <option value="">Select a product</option>
-                    {products.map((product) => <option key={product.id} value={product.slug}>{product.name}</option>)}
-                  </select>
-                </label>
-                <label>Quantity<input type="number" min="1" value={item.quantity} onChange={(event) => setItemField(index, "quantity", event.target.value)} required /></label>
-                <label>Unit<input value={item.unit} onChange={(event) => setItemField(index, "unit", event.target.value)} required /></label>
-                <button type="button" className="line-item-remove" disabled={orderForm.items.length === 1} onClick={() => removeItemRow(index)}>Remove</button>
-              </div>
-            ))}
+            {orderForm.items.map((item, index) => {
+              const selectedProduct = products.find((product) => product.slug === item.productSlug);
+              return (
+                <div key={`${index}-${item.productSlug}`} className="line-item-row">
+                  <label className="line-item-product-cell line-item-field">
+                    Product
+                    <select value={item.productSlug} onChange={(event) => selectProductForItem(index, event.target.value)} required>
+                      <option value="">Select a product</option>
+                      {products.map((product) => <option key={product.id} value={product.slug}>{product.name}</option>)}
+                    </select>
+                    {selectedProduct?.price !== null && selectedProduct?.price !== undefined ? (
+                      <small className="table-muted line-item-price-hint">
+                        Price: INR {selectedProduct.price.toFixed(2)} / {selectedProduct.priceUnit}
+                      </small>
+                    ) : (
+                      <small className="table-muted line-item-price-hint line-item-price-hint-empty">
+                        Price: -
+                      </small>
+                    )}
+                  </label>
+                  <label className="line-item-field">
+                    Quantity
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(event) => setItemField(index, "quantity", event.target.value)}
+                      required
+                    />
+                    <small className="line-item-price-hint line-item-price-hint-empty">-</small>
+                  </label>
+                  <label className="line-item-field">
+                    Unit
+                    <input value={item.unit} readOnly required />
+                    <small className="line-item-price-hint line-item-price-hint-empty">-</small>
+                  </label>
+                  <div className="line-item-action-cell">
+                    <span>Action</span>
+                    <button
+                      type="button"
+                      className="line-item-remove"
+                      disabled={orderForm.items.length === 1}
+                      onClick={() => removeItemRow(index)}
+                    >
+                      Remove
+                    </button>
+                    <small className="line-item-price-hint line-item-price-hint-empty">-</small>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="form-actions">

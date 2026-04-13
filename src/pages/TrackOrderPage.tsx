@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 import { readErrorMessage, trackOrderApi } from "../lib/api";
 import type { Order } from "../types/domain";
 
@@ -48,7 +49,13 @@ export function TrackOrderPage() {
           <div className="section-heading section-heading-left">
             <span className="section-badge">Order Tracking</span>
             <h2>Track Any Order By Number</h2>
-            <p>Enter the tracking ID from your order request confirmation to follow order progress.</p>
+            <p>
+              Legacy tracking is still available here. For best experience, use
+              {" "}
+              <Link to="/portal/login">My Account</Link>
+              {" "}
+              with OTP.
+            </p>
           </div>
           <form className="track-form" onSubmit={handleTrackSubmit}>
             <input

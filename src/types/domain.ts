@@ -4,6 +4,7 @@ export type Product = {
   slug: string;
   sku: string;
   price: number | null;
+  priceUnit: string;
   status: "ACTIVE" | "INACTIVE";
   imageUrl: string | null;
   shortDescription: string;
@@ -24,12 +25,18 @@ export type OrderStatus =
 
 export type OrderItem = {
   id: number;
+  productId: number | null;
   productName: string;
   productSlug: string;
   quantity: number;
   unit: string;
   moqSnapshot: string;
   unitPrice: number | null;
+  lineSubtotal: number | null;
+  taxRate: number | null;
+  taxAmount: number | null;
+  discountRate: number | null;
+  discountAmount: number | null;
   lineTotal: number | null;
 };
 
@@ -41,6 +48,7 @@ export type OrderHistory = {
 
 export type Order = {
   id: number;
+  customerId: number | null;
   orderNumber: string;
   fullName: string;
   companyName: string;
@@ -63,6 +71,9 @@ export type Order = {
   subtotalAmount: number | null;
   shippingAmount: number | null;
   taxAmount: number | null;
+  discountAmount: number | null;
+  effectiveTaxRate: number | null;
+  effectiveDiscountRate: number | null;
   totalAmount: number | null;
   items: OrderItem[];
   statusHistory: OrderHistory[];
@@ -93,4 +104,57 @@ export type QuoteDraft = {
   shippingAmount: string;
   taxAmount: string;
   itemPrices: Record<number, string>;
+};
+
+export type InquirySubmissionResponse = {
+  id: number;
+  inquiryType: "GENERAL" | "INVESTOR" | "FARMER" | "COLLECTION_HUB";
+  referenceId: string | null;
+  status: string;
+  verificationStatus: string;
+  paymentStatus: string;
+};
+
+export type PortalOrderSummary = {
+  id: number;
+  orderNumber: string;
+  status: string;
+  totalAmount: number | null;
+  currency: string;
+  createdAt: string;
+  quoteReference: string | null;
+};
+
+export type PortalInvestorSummary = {
+  id: number;
+  referenceId: string | null;
+  status: string;
+  verificationStatus: string;
+  paymentStatus: string;
+  investmentAmount: number | null;
+  committedReturnAmount: number | null;
+  agreementId: string | null;
+  createdAt: string;
+};
+
+export type PortalFarmerSummary = {
+  id: number;
+  referenceId: string | null;
+  status: string;
+  verificationStatus: string;
+  farmingType: string | null;
+  landArea: string | null;
+  mainCrops: string | null;
+  farmerActionNote: string | null;
+  createdAt: string;
+};
+
+export type PortalSummary = {
+  identifier: string;
+  totalInvested: number;
+  totalCommittedReturn: number;
+  orderCount: number;
+  orders: PortalOrderSummary[];
+  investors: PortalInvestorSummary[];
+  farmers: PortalFarmerSummary[];
 };
