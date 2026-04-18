@@ -127,13 +127,12 @@ export type PortalOrderSummary = {
 
 export type PortalInvestorSummary = {
   id: number;
-  referenceId: string | null;
+  investorCode: string;
   status: string;
   verificationStatus: string;
-  paymentStatus: string;
-  investmentAmount: number | null;
-  committedReturnAmount: number | null;
-  agreementId: string | null;
+  totalInvested: number;
+  totalReturnsReceived: number;
+  pendingPayout: number;
   createdAt: string;
 };
 
@@ -153,8 +152,38 @@ export type PortalSummary = {
   identifier: string;
   totalInvested: number;
   totalCommittedReturn: number;
+  totalReturnsReceived: number;
+  pendingPayout: number;
   orderCount: number;
   orders: PortalOrderSummary[];
   investors: PortalInvestorSummary[];
   farmers: PortalFarmerSummary[];
+  monthlyReturns: Array<{
+    id: number;
+    periodYear: number;
+    periodMonth: number;
+    investmentReference: string;
+    basePrincipal: number;
+    returnRate: number;
+    calculatedAmount: number;
+    overrideAmount: number | null;
+    finalAmount: number;
+    status: string;
+    overrideReason: string | null;
+    payoutReference: string | null;
+    receiptNumber: string | null;
+    updatedAt: string;
+  }>;
+  payouts: Array<{
+    id: number;
+    payoutReference: string;
+    totalAmount: number;
+    status: string;
+    paymentChannel: string | null;
+    transactionReference: string | null;
+    paidAt: string | null;
+    receiptNumber: string | null;
+    receiptId: number | null;
+    createdAt: string;
+  }>;
 };

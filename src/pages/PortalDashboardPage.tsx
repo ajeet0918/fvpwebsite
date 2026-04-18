@@ -36,18 +36,13 @@ export function PortalDashboardPage() {
     return <Navigate to="/portal/login" replace />;
   }
 
-  const hasOrders = Boolean(summary && summary.orders.length > 0);
-  const hasInvestors = Boolean(summary && summary.investors.length > 0);
-  const hasFarmers = Boolean(summary && summary.farmers.length > 0);
-  const visibleSectionCount = [hasOrders, hasInvestors, hasFarmers].filter(Boolean).length;
-
   return (
     <section className="section page-top">
       <div className="container">
         <div className="section-heading section-heading-left">
           <span className="section-badge">My Portal</span>
           <h2>Welcome Back</h2>
-          <p>View your order journey, investment profile, and farmer activity updates.</p>
+          <p>View your order journey, investment returns, payout status, and downloadable receipts.</p>
           <div className="hero-actions">
             <button
               type="button"
@@ -68,24 +63,22 @@ export function PortalDashboardPage() {
         {summary ? (
           <>
             <div className="stats-band portal-stats-band">
-              {hasOrders ? (
-                <article className="stats-item">
-                  <strong>{summary.orderCount}</strong>
-                  <span>Total Orders</span>
-                </article>
-              ) : null}
-              {hasInvestors ? (
-                <>
-                  <article className="stats-item">
-                    <strong>{formatCurrency(summary.totalInvested)}</strong>
-                    <span>Total Invested</span>
-                  </article>
-                  <article className="stats-item">
-                    <strong>{formatCurrency(summary.totalCommittedReturn)}</strong>
-                    <span>Committed Return</span>
-                  </article>
-                </>
-              ) : null}
+              <article className="stats-item">
+                <strong>{formatCurrency(summary.totalInvested)}</strong>
+                <span>Total Invested</span>
+              </article>
+              <article className="stats-item">
+                <strong>{formatCurrency(summary.totalCommittedReturn)}</strong>
+                <span>Committed Return</span>
+              </article>
+              <article className="stats-item">
+                <strong>{formatCurrency(summary.totalReturnsReceived)}</strong>
+                <span>Returns Received</span>
+              </article>
+              <article className="stats-item">
+                <strong>{formatCurrency(summary.pendingPayout)}</strong>
+                <span>Pending Payout</span>
+              </article>
               <article className="stats-item stats-item-identifier">
                 <strong>{summary.identifier}</strong>
                 <span>Login Identifier</span>
@@ -93,71 +86,85 @@ export function PortalDashboardPage() {
             </div>
 
             <div className="section">
-              {visibleSectionCount === 0 ? (
-                <article className="tracking-panel">
-                  <h3>Profile Under Review</h3>
-                  <p>
-                    Account access is active, but no records are available yet.
-                    Create an order request or wait for profile submission updates.
-                  </p>
-                </article>
-              ) : null}
+              <article className="tracking-panel portal-panel">
+                <h3>Order History</h3>
+                {summary.orders.map((order) => (
+                  <div key={order.id} className="tracking-item-row">
+                    <span>
+                      {order.orderNumber} ({order.status})<br />
+                      <small>{formatDate(order.createdAt)}</small>
+                    </span>
+                    <strong>
+                      {order.totalAmount ? formatCurrency(order.totalAmount, order.currency) : "Pending"}
+                    </strong>
+                    <Link className="button button-secondary button-small" to={`/invoice/${order.orderNumber}`}>
+                      Invoice
+                    </Link>
+                  </div>
+                ))}
+                {summary.orders.length === 0 ? <p>No orders yet.</p> : null}
+              </article>
 
-              {hasOrders ? (
-                <article className="tracking-panel portal-panel">
-                  <h3>Order History</h3>
-                  {summary.orders.map((order) => (
-                    <div key={order.id} className="tracking-item-row">
-                      <span>
-                        {order.orderNumber} ({order.status})<br />
-                        <small>{formatDate(order.createdAt)}</small>
-                      </span>
-                      <strong>
-                        {order.totalAmount ? formatCurrency(order.totalAmount, order.currency) : "Pending"}
-                      </strong>
-                      <Link className="button button-secondary button-small" to={`/invoice/${order.orderNumber}`}>
-                        Invoice
-                      </Link>
-                    </div>
-                  ))}
-                </article>
-              ) : null}
+              <article className="tracking-panel portal-panel">
+                <h3>Investor Accounts</h3>
+                {summary.investors.map((item) => (
+                  <div key={item.id} className="tracking-item-row">
+                    <span>
+                      {item.investorCode} ({item.verificationStatus})<br />
+                      <small>{formatDate(item.createdAt)}</small>
+                    </span>
+                    <strong>
+                      {formatCurrency(item.totalInvested)}<br />
+                      <small>Returns: {formatCurrency(item.totalReturnsReceived)}</small>
+                    </strong>
+                  </div>
+                ))}
+                {summary.investors.length === 0 ? <p>No investor profile linked yet.</p> : null}
+              </article>
 
-              {hasInvestors ? (
-                <article className="tracking-panel portal-panel">
-                  <h3>Investor Profile</h3>
-                  {summary.investors.map((item) => (
-                    <div key={item.id} className="tracking-item-row">
-                      <span>
-                        {item.referenceId ?? "N/A"} ({item.verificationStatus})<br />
-                        <small>Payment: {item.paymentStatus} | {formatDate(item.createdAt)}</small>
-                      </span>
-                      <strong>
-                        {item.investmentAmount ? formatCurrency(item.investmentAmount) : "Pending"}
-                        <br />
-                        <small>
-                          Return: {item.committedReturnAmount ? formatCurrency(item.committedReturnAmount) : "Pending"}
-                        </small>
-                      </strong>
-                    </div>
-                  ))}
-                </article>
-              ) : null}
+              <article className="tracking-panel portal-panel">
+                <h3>Monthly Return History</h3>
+                {summary.monthlyReturns.map((item) => (
+                  <div key={item.id} className="tracking-item-row">
+                    <span>
+                      {item.periodYear}-{String(item.periodMonth).padStart(2, "0")} | {item.investmentReference}<br />
+                      <small>{item.status} | Updated {formatDate(item.updatedAt)}</small>
+                    </span>
+                    <strong>
+                      {formatCurrency(item.finalAmount)}<br />
+                      <small>Calc: {formatCurrency(item.calculatedAmount)}</small>
+                    </strong>
+                  </div>
+                ))}
+                {summary.monthlyReturns.length === 0 ? <p>No monthly return entries yet.</p> : null}
+              </article>
 
-              {hasFarmers ? (
-                <article className="tracking-panel portal-panel">
-                  <h3>Farmer Profile</h3>
-                  {summary.farmers.map((item) => (
-                    <div key={item.id} className="tracking-item-row">
-                      <span>
-                        {item.referenceId ?? "N/A"} ({item.verificationStatus})<br />
-                        <small>{item.mainCrops ?? "-"} | {item.landArea ?? "-"} | {formatDate(item.createdAt)}</small>
-                      </span>
-                      <strong>{item.farmerActionNote ?? "No action assigned yet"}</strong>
-                    </div>
-                  ))}
-                </article>
-              ) : null}
+              <article className="tracking-panel portal-panel">
+                <h3>Payout & Receipts</h3>
+                {summary.payouts.map((item) => (
+                  <div key={item.id} className="tracking-item-row">
+                    <span>
+                      {item.payoutReference} ({item.status})<br />
+                      <small>{item.paidAt ? `Paid ${formatDate(item.paidAt)}` : formatDate(item.createdAt)}</small>
+                    </span>
+                    <strong>
+                      {formatCurrency(item.totalAmount)}<br />
+                      <small>{item.transactionReference ?? "Transaction pending"}</small>
+                    </strong>
+                    {item.receiptNumber ? (
+                      <a
+                        className="button button-secondary button-small"
+                        href={`${import.meta.env.VITE_API_BASE_URL}/portal/receipts/${item.receiptNumber}/download`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Receipt
+                      </a>
+                    ) : null}
+                  </div>
+                ))}
+                {summary.payouts.length === 0 ? <p>No payouts yet.</p> : null}
+              </article>
             </div>
           </>
         ) : null}
