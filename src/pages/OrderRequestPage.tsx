@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { createOrderApi, fetchProductsApi, readErrorMessage } from "../lib/api";
 import type { OrderFormState, Product } from "../types/domain";
 
@@ -16,6 +17,7 @@ const initialOrderForm: OrderFormState = {
 };
 
 export function OrderRequestPage() {
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderForm, setOrderForm] = useState<OrderFormState>(initialOrderForm);
   const [submittingOrder, setSubmittingOrder] = useState(false);
@@ -37,6 +39,25 @@ export function OrderRequestPage() {
 
     void loadProducts();
   }, []);
+
+  useEffect(() => {
+    const selectedSlug = searchParams.get("product")?.trim();
+    if (!selectedSlug || products.length === 0) {
+      return;
+    }
+
+    const matchedProduct = products.find((item) => item.slug === selectedSlug);
+    if (!matchedProduct) {
+      return;
+    }
+
+    setOrderForm((current) => ({
+      ...current,
+      items: current.items.length > 0
+        ? current.items.map((item, index) => index === 0 ? { ...item, productSlug: matchedProduct.slug, unit: matchedProduct.priceUnit ?? "" } : item)
+        : [{ productSlug: matchedProduct.slug, quantity: "1", unit: matchedProduct.priceUnit ?? "" }]
+    }));
+  }, [products, searchParams]);
 
   function setOrderField<K extends keyof Omit<OrderFormState, "items">>(field: K, value: string) {
     setOrderForm((current) => ({ ...current, [field]: value }));

@@ -374,7 +374,7 @@ Admin will verify and share next onboarding steps for your collection hub.`
           <div className="form-grid">
             <label>Notes (optional)<textarea rows={3} value={form.notes} onChange={(event) => setField("notes", event.target.value)} /></label>
           </div>
-          <label className="inline-checkbox">
+          <div className="inline-checkbox">
             <input
               type="checkbox"
               checked={form.termsAccepted}
@@ -385,7 +385,7 @@ Admin will verify and share next onboarding steps for your collection hub.`
               I have read and accepted the{" "}
               {joinType === "INVESTOR" ? "investor" : joinType === "FARMER" ? "farmer" : "collection hub"} terms and conditions.
             </span>
-          </label>
+          </div>
           <div className="form-actions">
             <button type="submit" className="button button-primary" disabled={submitting}>
               {submitting ? "Submitting..." : "Submit Request"}

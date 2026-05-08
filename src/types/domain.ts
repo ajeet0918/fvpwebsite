@@ -23,6 +23,12 @@ export type OrderStatus =
   | "DELIVERED"
   | "CANCELLED";
 
+export type OrderPaymentStatus =
+  | "NOT_INITIATED"
+  | "PENDING"
+  | "PAID"
+  | "FAILED";
+
 export type OrderItem = {
   id: number;
   productId: number | null;
@@ -61,6 +67,12 @@ export type Order = {
   customerNotes: string;
   status: OrderStatus;
   currency: string;
+  paymentStatus: OrderPaymentStatus;
+  paymentDueAmount: number | null;
+  paymentProvider: string | null;
+  paymentProviderOrderId: string | null;
+  paymentProviderReference: string | null;
+  paidAt: string | null;
   createdAt: string;
   quotedAt: string | null;
   confirmedAt: string | null;
@@ -77,6 +89,44 @@ export type Order = {
   totalAmount: number | null;
   items: OrderItem[];
   statusHistory: OrderHistory[];
+};
+
+export type CustomerOrder = Order;
+
+export type CustomerProfile = {
+  id: number;
+  fullName: string;
+  companyName: string;
+  email: string;
+  phone: string;
+  deliveryAddress: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  preferredPaymentMethod: string | null;
+  preferredPaymentHandle: string | null;
+};
+
+export type CustomerAddress = {
+  id: number;
+  label: string;
+  recipientName: string;
+  phone: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+};
+
+export type CustomerAuthResponse = {
+  accessToken: string;
+  tokenType: string;
+  expiresInSeconds: number;
+  role: string;
+  profile: CustomerProfile;
 };
 
 export type OrderFormItem = {
@@ -98,14 +148,6 @@ export type OrderFormState = {
   items: OrderFormItem[];
 };
 
-export type QuoteDraft = {
-  quoteReference: string;
-  adminNotes: string;
-  shippingAmount: string;
-  taxAmount: string;
-  itemPrices: Record<number, string>;
-};
-
 export type InquirySubmissionResponse = {
   id: number;
   inquiryType: "GENERAL" | "INVESTOR" | "FARMER" | "COLLECTION_HUB";
@@ -113,77 +155,4 @@ export type InquirySubmissionResponse = {
   status: string;
   verificationStatus: string;
   paymentStatus: string;
-};
-
-export type PortalOrderSummary = {
-  id: number;
-  orderNumber: string;
-  status: string;
-  totalAmount: number | null;
-  currency: string;
-  createdAt: string;
-  quoteReference: string | null;
-};
-
-export type PortalInvestorSummary = {
-  id: number;
-  investorCode: string;
-  status: string;
-  verificationStatus: string;
-  totalInvested: number;
-  totalReturnsReceived: number;
-  pendingPayout: number;
-  createdAt: string;
-};
-
-export type PortalFarmerSummary = {
-  id: number;
-  referenceId: string | null;
-  status: string;
-  verificationStatus: string;
-  farmingType: string | null;
-  landArea: string | null;
-  mainCrops: string | null;
-  farmerActionNote: string | null;
-  createdAt: string;
-};
-
-export type PortalSummary = {
-  identifier: string;
-  totalInvested: number;
-  totalCommittedReturn: number;
-  totalReturnsReceived: number;
-  pendingPayout: number;
-  orderCount: number;
-  orders: PortalOrderSummary[];
-  investors: PortalInvestorSummary[];
-  farmers: PortalFarmerSummary[];
-  monthlyReturns: Array<{
-    id: number;
-    periodYear: number;
-    periodMonth: number;
-    investmentReference: string;
-    basePrincipal: number;
-    returnRate: number;
-    calculatedAmount: number;
-    overrideAmount: number | null;
-    finalAmount: number;
-    status: string;
-    overrideReason: string | null;
-    payoutReference: string | null;
-    receiptNumber: string | null;
-    updatedAt: string;
-  }>;
-  payouts: Array<{
-    id: number;
-    payoutReference: string;
-    totalAmount: number;
-    status: string;
-    paymentChannel: string | null;
-    transactionReference: string | null;
-    paidAt: string | null;
-    receiptNumber: string | null;
-    receiptId: number | null;
-    createdAt: string;
-  }>;
 };

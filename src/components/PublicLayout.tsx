@@ -3,11 +3,11 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const navLinks = [
   { key: "home", name: "Home", type: "route", path: "/" },
-  { key: "products", name: "Products", type: "anchor", path: "/#products", sectionId: "products" },
   { key: "about", name: "About", type: "anchor", path: "/#about", sectionId: "about" },
   { key: "contact", name: "Contact", type: "anchor", path: "/#contact", sectionId: "contact" },
   { key: "join", name: "Join With Us", type: "route", path: "/join-us" },
-  { key: "order", name: "Order Request", type: "route", path: "/order-request" },
+  { key: "products", name: "Shop", type: "route", path: "/shop" },
+  { key: "checkout", name: "Checkout", type: "route", path: "/checkout" },
   { key: "portal", name: "My Account", type: "route", path: "/portal/login" }
 ] as const;
 
@@ -40,7 +40,7 @@ export function PublicLayout() {
       return;
     }
 
-    const sectionOrder = ["contact", "about", "products"] as const;
+    const sectionOrder = ["contact", "about"] as const;
     const detectSection = () => {
       const offsetY = window.scrollY + 140;
       const found = sectionOrder.find((sectionId) => {
@@ -79,13 +79,13 @@ export function PublicLayout() {
 
   const activeKey = useMemo(() => {
     if (location.pathname === "/") {
-      if (location.hash === "#products") return "products";
       if (location.hash === "#about") return "about";
       if (location.hash === "#contact") return "contact";
       return activeSection;
     }
+    if (location.pathname.startsWith("/shop")) return "products";
     if (location.pathname.startsWith("/join-us")) return "join";
-    if (location.pathname.startsWith("/order-request")) return "order";
+    if (location.pathname.startsWith("/checkout")) return "checkout";
     if (location.pathname.startsWith("/portal")) return "portal";
     return "";
   }, [activeSection, location.hash, location.pathname]);
@@ -223,7 +223,7 @@ export function PublicLayout() {
             </NavLink>
             <p>
               Wholesale agricultural products for businesses and growers. Public website includes catalog,
-              order request, and account-based order history.
+              direct checkout, and account-based order history.
             </p>
           </div>
 
@@ -231,11 +231,11 @@ export function PublicLayout() {
             <h3>Quick Links</h3>
             <ul>
               <li><NavLink to="/">Home</NavLink></li>
-              <li><a href="/#products">Products</a></li>
+              <li><NavLink to="/shop">Shop</NavLink></li>
               <li><a href="/#about">About</a></li>
               <li><a href="/#contact">Contact</a></li>
               <li><NavLink to="/join-us">Join With Us</NavLink></li>
-              <li><NavLink to="/order-request">Order Request</NavLink></li>
+              <li><NavLink to="/checkout">Checkout</NavLink></li>
               <li><NavLink to="/portal/login">My Account</NavLink></li>
             </ul>
           </div>
@@ -246,8 +246,8 @@ export function PublicLayout() {
               <li><span>Product catalog</span></li>
               <li><span>Investor onboarding</span></li>
               <li><span>Farmer registration</span></li>
-              <li><span>OTP account login</span></li>
-              <li><span>Bulk order request</span></li>
+              <li><span>Email/Google account login</span></li>
+              <li><span>Direct order checkout</span></li>
               <li><span>Order history in account</span></li>
               <li><span>Contact and support</span></li>
             </ul>
@@ -268,7 +268,6 @@ export function PublicLayout() {
         <div className="footer-bottom">
           <div className="container footer-bottom-row">
             <span>Copyright 2026 FVP Purepick</span>
-            <span>Public storefront only - admin moved to separate portal</span>
           </div>
         </div>
       </footer>
