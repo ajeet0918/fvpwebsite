@@ -1,8 +1,7 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL, fetchProductsApi, readErrorMessage, submitLeadApi } from "../lib/api";
+import { readErrorMessage, submitLeadApi } from "../lib/api";
 import type { Product } from "../types/domain";
-import { localProductImages } from "../data/productImages";
 
 const serviceCards = [
   ["Seeds", "High-quality seeds for cereals, grains, vegetables, fruits, and legumes."],
@@ -13,37 +12,107 @@ const serviceCards = [
   ["Food Products", "Wholesale grains, pulses, spices, and selected processed food items."]
 ] as const;
 
+const staticProductCards: Product[] = [
+  {
+    id: 1,
+    name: "Premium Wheat Seeds",
+    slug: "premium-wheat-seeds",
+    sku: "SEED-WHEAT-001",
+    price: null,
+    priceUnit: "Per Kg",
+    status: "ACTIVE",
+    imageUrl: "/assets/product-seeds.jpg",
+    shortDescription: "High-germination wheat seeds designed for strong yield and healthy crop establishment.",
+    longDescription: "Suitable for wholesale farm requirements with quality-tested batches and reliable sourcing.",
+    moq: "100 Kg",
+    featured: true,
+    category: "Seeds"
+  },
+  {
+    id: 2,
+    name: "Organic Growth Fertilizer",
+    slug: "organic-growth-fertilizer",
+    sku: "FERT-ORG-001",
+    price: null,
+    priceUnit: "Per Bag",
+    status: "ACTIVE",
+    imageUrl: "/assets/product-fertilizer.jpg",
+    shortDescription: "Balanced nutrient blend to support root strength, growth consistency, and soil health.",
+    longDescription: "Ideal for bulk farming programs that require stable product quality across seasons.",
+    moq: "50 Bags",
+    featured: true,
+    category: "Fertilizers"
+  },
+  {
+    id: 3,
+    name: "Field Spray Equipment Kit",
+    slug: "field-spray-equipment-kit",
+    sku: "EQP-SPRAY-001",
+    price: null,
+    priceUnit: "Per Unit",
+    status: "ACTIVE",
+    imageUrl: "/assets/product-equipment.jpg",
+    shortDescription: "Durable spraying kit for crop protection workflows and day-to-day field operations.",
+    longDescription: "Built for practical usage in wholesale and agri-operational environments.",
+    moq: "10 Units",
+    featured: true,
+    category: "Agricultural Tools and Equipment"
+  },
+  {
+    id: 4,
+    name: "Crop Protection Mix",
+    slug: "crop-protection-mix",
+    sku: "PEST-CROP-001",
+    price: null,
+    priceUnit: "Per Box",
+    status: "ACTIVE",
+    imageUrl: "/assets/product-equipment.jpg",
+    shortDescription: "Farm-safe pesticide and insecticide selection for preventive and responsive usage.",
+    longDescription: "Compliance-oriented crop protection products selected for efficacy and reliability.",
+    moq: "25 Boxes",
+    featured: false,
+    category: "Pesticides and Insecticides"
+  },
+  {
+    id: 5,
+    name: "Nutri Animal Feed",
+    slug: "nutri-animal-feed",
+    sku: "FEED-ANIMAL-001",
+    price: null,
+    priceUnit: "Per Bag",
+    status: "ACTIVE",
+    imageUrl: "/assets/product-fertilizer.jpg",
+    shortDescription: "Nutrient-focused feed solutions for livestock productivity and health support.",
+    longDescription: "Sourced through trusted suppliers for consistent wholesale availability.",
+    moq: "40 Bags",
+    featured: false,
+    category: "Animal Feed"
+  },
+  {
+    id: 6,
+    name: "Wholesale Grains and Pulses",
+    slug: "wholesale-grains-pulses",
+    sku: "FOOD-GRAIN-001",
+    price: null,
+    priceUnit: "Per Quintal",
+    status: "ACTIVE",
+    imageUrl: "/assets/product-seeds.jpg",
+    shortDescription: "Bulk-grade grains, pulses, and staples for retailers and distribution channels.",
+    longDescription: "Stable sourcing network for food-product wholesale requirements.",
+    moq: "20 Quintals",
+    featured: false,
+    category: "Food Products"
+  }
+];
+
 export function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
-  const [pageError, setPageError] = useState<string | null>(null);
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadMessage, setLeadMessage] = useState<string | null>(null);
 
-  const productCards = useMemo(
-    () => (products.filter((product) => product.featured).slice(0, 3).length > 0
-      ? products.filter((product) => product.featured).slice(0, 3)
-      : products.slice(0, 3)),
-    [products]
-  );
-
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoadingProducts(true);
-        setProducts(await fetchProductsApi());
-      } catch (error) {
-        setPageError(readErrorMessage(error, "Unable to load products."));
-      } finally {
-        setLoadingProducts(false);
-      }
-    }
-
-    void loadProducts();
-  }, []);
+  const productCards = useMemo(() => staticProductCards, []);
 
   async function handleLeadSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,7 +166,7 @@ export function HomePage() {
               <div className="hero-actions hero-actions-uniform">
                 <Link className="button button-primary button-large hero-cta" to="/join-us?type=investor">Buy / Invest Now</Link>
                 <Link className="button button-primary button-large hero-cta" to="/join-us?type=farmer">Join as Farmer</Link>
-                <Link className="button button-primary button-large hero-cta" to="/order-request">Request Bulk Order</Link>
+                <Link className="button button-primary button-large hero-cta" to="/shop">Shop & Checkout</Link>
                 <Link className="button button-primary button-large hero-cta" to="/portal/login">My Account</Link>
               </div>
             </div>
@@ -124,55 +193,33 @@ export function HomePage() {
         <div className="hero-fade" />
       </section>
 
-      {pageError ? <div className="banner-error">{pageError}</div> : null}
-
       <section id="products" className="section section-soft">
         <div className="container">
           <div className="section-heading">
             <span className="section-badge">Our Products</span>
             <h2>Wholesale Agricultural Products</h2>
-            <p>Explore our featured wholesale products and minimum order quantities.</p>
+            <p>Featured categories below link to full dynamic shop catalog.</p>
           </div>
 
           <div className="product-grid">
-            {loadingProducts
-              ? Array.from({ length: 3 }, (_, index) => (
-                  <article key={index} className="product-card product-card-loading">
-                    <div className="product-media skeleton-block" />
-                    <div className="product-body">
-                      <div className="skeleton-line skeleton-line-lg" />
-                      <div className="skeleton-line" />
-                      <div className="skeleton-line" />
+            {productCards.map((product, index) => (
+              <Link key={product.id} to={`/shop?category=${encodeURIComponent(product.category)}`} className="product-card-link">
+                <article className="product-card">
+                  <div className="product-media">
+                    <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
+                    <img src={product.imageUrl ?? "/assets/product-seeds.jpg"} alt={product.name} />
+                    <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
+                      {product.name.charAt(0)}
                     </div>
-                  </article>
-                ))
-              : productCards.map((product, index) => (
-                  <article key={product.id} className="product-card">
-                    <div className="product-media">
-                      <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
-                      <img
-                        src={
-                          product.imageUrl
-                            ? (product.imageUrl.startsWith("/") ? `${API_BASE_URL}${product.imageUrl}` : product.imageUrl)
-                            : (localProductImages[product.slug] ?? "/assets/product-seeds.jpg")
-                        }
-                        alt={product.name}
-                      />
-                      <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
-                        {product.name.charAt(0)}
-                      </div>
-                    </div>
-                    <div className="product-body">
-                      <span className="product-category">{product.category}</span>
-                      <h3>{product.name}</h3>
-                      <p>{product.shortDescription}</p>
-                      <div className="product-meta">
-                        <span>MOQ: {product.moq}</span>
-                        <span>Slug: {product.slug}</span>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+                  </div>
+                  <div className="product-body">
+                    <span className="product-category">{product.category}</span>
+                    <h3>{product.name}</h3>
+                    <p>{product.shortDescription}</p>
+                  </div>
+                </article>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

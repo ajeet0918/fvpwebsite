@@ -1,7 +1,15 @@
 /// <reference types="vite/client" />
 import axios from "axios";
-import { clearPortalAccessToken, getPortalAccessToken } from "./portalAuth";
-import type { InquirySubmissionResponse, Order, PortalSummary, Product } from "../types/domain";
+import { clearCustomerAccessToken, getCustomerAccessToken } from "./customerAuth";
+import type {
+  CustomerAddress,
+  CustomerAuthResponse,
+  CustomerProfile,
+  CustomerOrder,
+  InquirySubmissionResponse,
+  Order,
+  Product
+} from "../types/domain";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,23 +19,23 @@ if (!apiBaseUrl) {
 
 export const API_BASE_URL = apiBaseUrl;
 
-const portalApiClient = axios.create({
+const customerApiClient = axios.create({
   baseURL: API_BASE_URL
 });
 
-portalApiClient.interceptors.request.use((config) => {
-  const token = getPortalAccessToken();
+customerApiClient.interceptors.request.use((config) => {
+  const token = getCustomerAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-portalApiClient.interceptors.response.use(
+customerApiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      clearPortalAccessToken();
+      clearCustomerAccessToken();
     }
     return Promise.reject(error);
   }
@@ -38,8 +46,150 @@ export async function fetchProductsApi() {
   return response.data;
 }
 
+export async function fetchProductBySlugApi(slug: string) {
+  const response = await axios.get<Product>(`${API_BASE_URL}/products/${encodeURIComponent(slug)}`);
+  return response.data;
+}
+
+export async function submitLeadApi(payload: { fullName: string; email: string; phone: string }) {
+  const response = await axios.post(`${API_BASE_URL}/leads`, payload);
+  return response.data;
+}
+
 export async function createOrderApi(payload: object) {
   const response = await axios.post<Order>(`${API_BASE_URL}/orders`, payload);
+  return response.data;
+}
+
+export async function customerSignupApi(payload: {
+  fullName: string;
+  companyName?: string;
+  email: string;
+  phone: string;
+  password: string;
+}) {
+  const response = await axios.post<CustomerAuthResponse>(`${API_BASE_URL}/customer/auth/signup`, payload);
+  return response.data;
+}
+
+export async function customerLoginApi(payload: { email: string; password: string }) {
+  const response = await axios.post<CustomerAuthResponse>(`${API_BASE_URL}/customer/auth/login`, payload);
+  return response.data;
+}
+
+export async function customerGoogleAuthApi(idToken: string) {
+  const response = await axios.post<CustomerAuthResponse>(`${API_BASE_URL}/customer/auth/google`, { idToken });
+  return response.data;
+}
+
+export async function fetchCustomerProfileApi() {
+  const response = await customerApiClient.get<CustomerProfile>("/customer/me");
+  return response.data;
+}
+
+export async function updateCustomerProfileApi(payload: {
+  fullName: string;
+  companyName?: string;
+  phone: string;
+  deliveryAddress: string;
+  city: string;
+  state: string;
+  postalCode: string;
+}) {
+  const response = await customerApiClient.put<CustomerProfile>("/customer/me/profile", payload);
+  return response.data;
+}
+
+export async function updateCustomerPaymentPreferenceApi(payload: {
+  preferredPaymentMethod?: string;
+  preferredPaymentHandle?: string;
+}) {
+  const response = await customerApiClient.put<CustomerProfile>("/customer/me/payment-preference", payload);
+  return response.data;
+}
+
+export async function fetchCustomerAddressesApi() {
+  const response = await customerApiClient.get<CustomerAddress[]>("/customer/me/addresses");
+  return response.data;
+}
+
+export async function createCustomerAddressApi(payload: {
+  label: string;
+  recipientName: string;
+  phone: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}) {
+  const response = await customerApiClient.post<CustomerAddress>("/customer/me/addresses", payload);
+  return response.data;
+}
+
+export async function updateCustomerAddressApi(addressId: number, payload: {
+  label: string;
+  recipientName: string;
+  phone: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}) {
+  const response = await customerApiClient.put<CustomerAddress>(`/customer/me/addresses/${addressId}`, payload);
+  return response.data;
+}
+
+export async function deleteCustomerAddressApi(addressId: number) {
+  await customerApiClient.delete(`/customer/me/addresses/${addressId}`);
+}
+
+export async function createDirectOrderApi(payload: {
+  addressId?: number;
+  customerNotes?: string;
+  checkoutSuccessUrl: string;
+  checkoutFailureUrl: string;
+  items: Array<{
+    productSlug: string;
+    quantity: number;
+    unit: string;
+  }>;
+}) {
+  const response = await customerApiClient.post<{
+    orderId: number;
+    orderNumber: string;
+    paymentProvider: string;
+    providerOrderId: string | null;
+    paymentSessionId: string;
+    paymentLink: string;
+    message: string;
+  }>("/customer/me/orders", payload);
+  return response.data;
+}
+
+export async function createOrderPaymentSessionApi(orderId: number, payload: {
+  checkoutSuccessUrl: string;
+  checkoutFailureUrl: string;
+}) {
+  const response = await customerApiClient.post<{
+    orderId: number;
+    orderNumber: string;
+    paymentProvider: string;
+    providerOrderId: string | null;
+    paymentSessionId: string;
+    paymentLink: string;
+    message: string;
+  }>(`/customer/me/orders/${orderId}/payment-session`, payload);
+  return response.data;
+}
+
+export async function fetchCustomerOrdersApi() {
+  const response = await customerApiClient.get<CustomerOrder[]>("/customer/me/orders");
   return response.data;
 }
 
@@ -47,11 +197,6 @@ export async function trackOrderApi(orderNumber: string) {
   const response = await axios.get<Order>(
     `${API_BASE_URL}/orders/track/${encodeURIComponent(orderNumber)}`
   );
-  return response.data;
-}
-
-export async function submitLeadApi(payload: { fullName: string; email: string; phone: string }) {
-  const response = await axios.post(`${API_BASE_URL}/leads`, payload);
   return response.data;
 }
 
@@ -164,29 +309,6 @@ export async function submitCollectionHubInquiryApi(
   }
 
   const response = await axios.post<InquirySubmissionResponse>(`${API_BASE_URL}/inquiries/collection-hub`, formData);
-  return response.data;
-}
-
-export async function requestPortalOtpApi(payload: { identifier: string }) {
-  const response = await axios.post<{ message: string; expiresInSeconds: number; devOtp: string | null }>(
-    `${API_BASE_URL}/portal/auth/request-otp`,
-    payload
-  );
-  return response.data;
-}
-
-export async function verifyPortalOtpApi(payload: { identifier: string; otp: string }) {
-  const response = await axios.post<{
-    accessToken: string;
-    tokenType: string;
-    expiresInSeconds: number;
-    role: string;
-  }>(`${API_BASE_URL}/portal/auth/verify-otp`, payload);
-  return response.data;
-}
-
-export async function fetchPortalSummaryApi() {
-  const response = await portalApiClient.get<PortalSummary>("/portal/summary");
   return response.data;
 }
 
