@@ -11,6 +11,7 @@ import {
   updateCustomerPaymentPreferenceApi,
   updateCustomerProfileApi
 } from "../lib/api";
+import { openCashfreeCheckout } from "../lib/cashfree";
 import { clearCustomerAccessToken, isCustomerAuthenticated } from "../lib/customerAuth";
 import type { CustomerAddress, CustomerOrder, CustomerProfile } from "../types/domain";
 
@@ -178,6 +179,10 @@ export function PortalDashboardPage() {
       });
       if (session.paymentLink) {
         window.location.href = session.paymentLink;
+        return;
+      }
+      if (session.paymentSessionId) {
+        await openCashfreeCheckout(session.paymentSessionId);
         return;
       }
       setError(session.message || "Payment session is not available right now.");

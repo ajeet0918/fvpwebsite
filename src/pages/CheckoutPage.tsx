@@ -8,6 +8,7 @@ import {
   readErrorMessage
 } from "../lib/api";
 import { clearCart, getCartItems, removeFromCart, updateCartQuantity } from "../lib/cart";
+import { openCashfreeCheckout } from "../lib/cashfree";
 import { isCustomerAuthenticated } from "../lib/customerAuth";
 import type { CustomerAddress, Product } from "../types/domain";
 
@@ -117,6 +118,10 @@ export function CheckoutPage() {
       setCartItemsState([]);
       if (result.paymentLink) {
         window.location.href = result.paymentLink;
+        return;
+      }
+      if (result.paymentSessionId) {
+        await openCashfreeCheckout(result.paymentSessionId);
         return;
       }
       setMessage(result.message || "Order created. Payment session is ready in your account.");
