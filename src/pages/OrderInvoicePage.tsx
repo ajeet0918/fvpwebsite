@@ -153,7 +153,7 @@ export function OrderInvoicePage() {
 
             <footer className="invoice-footer">
               <p>Thank you for choosing FVP Purepick.</p>
-              <p>For support: contact@fvpurepick.com | +91-9311358420</p>
+              <p>For support: contact@fvpurepick.com | +91-9650035272</p>
             </footer>
 
             <div className="hero-actions invoice-print-hidden">

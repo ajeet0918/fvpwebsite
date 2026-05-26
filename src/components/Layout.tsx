@@ -39,7 +39,7 @@ export function Layout({ children }: PropsWithChildren) {
         </div>
         <div className="footer-meta">
           <p>hello@verdantharvest.com</p>
-          <p>+91 90000 00000</p>
+          <p>+91 9650035272</p>
         </div>
       </footer>
     </div>
