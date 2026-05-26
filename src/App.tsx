@@ -4,6 +4,10 @@ import { CheckoutPage } from "./pages/CheckoutPage";
 import { JoinUsPage } from "./pages/JoinUsPage";
 import { HomePage } from "./pages/HomePage";
 import { OrderInvoicePage } from "./pages/OrderInvoicePage";
+import { PartnerActivatePage } from "./pages/PartnerActivatePage";
+import { PartnerDashboardPage } from "./pages/PartnerDashboardPage";
+import { PartnerLoginPage } from "./pages/PartnerLoginPage";
+import { PartnerResetPasswordPage } from "./pages/PartnerResetPasswordPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { PortalDashboardPage } from "./pages/PortalDashboardPage";
 import { PortalLoginPage } from "./pages/PortalLoginPage";
@@ -17,6 +21,10 @@ export default function App() {
         <Route path="/join-us" element={<JoinUsPage />} />
         <Route path="/portal/login" element={<PortalLoginPage />} />
         <Route path="/portal" element={<PortalDashboardPage />} />
+        <Route path="/partner/login" element={<PartnerLoginPage />} />
+        <Route path="/partner/activate" element={<PartnerActivatePage />} />
+        <Route path="/partner/reset-password" element={<PartnerResetPasswordPage />} />
+        <Route path="/partner" element={<PartnerDashboardPage />} />
         <Route path="/investor" element={<Navigate to="/join-us?type=investor" replace />} />
         <Route path="/farmer" element={<Navigate to="/join-us?type=farmer" replace />} />
         <Route path="/checkout" element={<CheckoutPage />} />

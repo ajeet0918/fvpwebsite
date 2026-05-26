@@ -256,9 +256,9 @@ export function PublicLayout() {
           <div className="footer-column">
             <h3>Contact Us</h3>
             <div className="contact-list">
-              <a href="tel:+919311358420">+(91)-9311358420</a>
+              <a href="tel:+919650035272">+(91)-9650035272</a>
               <a href="mailto:contact@fvpurepick.com">contact@fvpurepick.com</a>
-              <a className="button button-whatsapp" href="https://wa.me/9311358420" target="_blank" rel="noreferrer">
+              <a className="button button-whatsapp" href="https://wa.me/919650035272" target="_blank" rel="noreferrer">
                 WhatsApp Us
               </a>
             </div>

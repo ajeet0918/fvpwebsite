@@ -156,3 +156,79 @@ export type InquirySubmissionResponse = {
   verificationStatus: string;
   paymentStatus: string;
 };
+
+export type PortalAuthResponse = {
+  accessToken: string;
+  tokenType: string;
+  expiresInSeconds: number;
+  role: string;
+  username: string;
+  userType: "FARMER" | "INVESTOR" | "COLLECTION_HUB";
+};
+
+export type PortalSummary = {
+  identifier: string;
+  totalInvested: number;
+  totalCommittedReturn: number;
+  totalReturnsReceived: number;
+  pendingPayout: number;
+  orderCount: number;
+  orders: Array<{
+    id: number;
+    orderNumber: string;
+    status: string;
+    totalAmount: number;
+    currency: string;
+    createdAt: string;
+    quoteReference: string | null;
+  }>;
+  investors: Array<{
+    id: number;
+    investorCode: string;
+    status: string;
+    verificationStatus: string;
+    totalInvested: number;
+    totalReturnsReceived: number;
+    pendingPayout: number;
+    createdAt: string;
+  }>;
+  farmers: Array<{
+    id: number;
+    referenceId: string | null;
+    status: string;
+    verificationStatus: string;
+    farmingType: string | null;
+    landArea: string | null;
+    mainCrops: string | null;
+    farmerActionNote: string | null;
+    createdAt: string;
+  }>;
+  monthlyReturns: Array<{
+    id: number;
+    periodYear: number;
+    periodMonth: number;
+    investmentReference: string;
+    basePrincipal: number;
+    returnRate: number;
+    calculatedAmount: number;
+    overrideAmount: number | null;
+    finalAmount: number;
+    status: string;
+    overrideReason: string | null;
+    payoutReference: string | null;
+    receiptNumber: string | null;
+    updatedAt: string;
+  }>;
+  payouts: Array<{
+    id: number;
+    payoutReference: string;
+    totalAmount: number;
+    status: string;
+    paymentChannel: string | null;
+    transactionReference: string | null;
+    paidAt: string | null;
+    receiptNumber: string | null;
+    receiptId: number | null;
+    createdAt: string;
+  }>;
+};

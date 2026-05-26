@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   customerGoogleAuthApi,
   customerLoginApi,
@@ -216,6 +216,7 @@ export function PortalLoginPage() {
                 <button type="submit" className="button button-primary auth-submit" disabled={loading}>
                   {loading ? "Signing in..." : "Login"}
                 </button>
+                <Link className="button button-secondary" to="/partner/login">Partner Login</Link>
               </div>
             </form>
           ) : (

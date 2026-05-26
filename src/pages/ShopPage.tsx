@@ -5,9 +5,17 @@ import { addToCart } from "../lib/cart";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
 
+function resolveApiOrigin(baseUrl: string) {
+  try {
+    return new URL(baseUrl).origin;
+  } catch {
+    return baseUrl;
+  }
+}
+
 function resolveProductImage(product: Product) {
   if (product.imageUrl) {
-    return product.imageUrl.startsWith("/") ? `${API_BASE_URL}${product.imageUrl}` : product.imageUrl;
+    return product.imageUrl.startsWith("/") ? `${resolveApiOrigin(API_BASE_URL)}${product.imageUrl}` : product.imageUrl;
   }
   return localProductImages[product.slug] ?? "/assets/product-seeds.jpg";
 }

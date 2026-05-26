@@ -7,6 +7,8 @@
     "start": "vite",
     "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.app.json && vite build",
+    "build:staging": "tsc --noEmit -p tsconfig.app.json && vite build --mode staging",
+    "build:production": "tsc --noEmit -p tsconfig.app.json && vite build --mode production",
     "preview": "vite preview"
   },
   "dependencies": {
