@@ -53,8 +53,7 @@ export function TrackOrderPage() {
               Legacy tracking is still available here. For best experience, use
               {" "}
               <Link to="/portal/login">My Account</Link>
-              {" "}
-              with OTP.
+              .
             </p>
           </div>
           <form className="track-form" onSubmit={handleTrackSubmit}>

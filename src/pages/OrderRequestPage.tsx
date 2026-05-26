@@ -114,7 +114,7 @@ export function OrderRequestPage() {
       });
 
       setOrderForm(initialOrderForm);
-      setOrderFormMessage(`Order request created. Reference: ${created.orderNumber}. You can now login to My Account with OTP to view your order journey.`);
+      setOrderFormMessage(`Order request created. Reference: ${created.orderNumber}. You can now login to My Account to view your order journey.`);
     } catch (error) {
       setOrderFormMessage(readErrorMessage(error, "Unable to create order request."));
     } finally {
@@ -129,7 +129,7 @@ export function OrderRequestPage() {
         <div className="section-heading section-heading-left">
           <span className="section-badge">Request Order</span>
           <h2>Create a Bulk Order Request</h2>
-          <p>After request submission, access your order timeline in My Account using OTP login.</p>
+          <p>After request submission, access your order timeline in My Account.</p>
         </div>
 
         <form className="order-form order-request-form" onSubmit={handleOrderSubmit}>

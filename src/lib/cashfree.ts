@@ -19,15 +19,6 @@ const CASHFREE_SCRIPT_ID = "cashfree-sdk-v3";
 const CASHFREE_SCRIPT_SRC = "https://sdk.cashfree.com/js/v3/cashfree.js";
 
 function resolveMode(): "sandbox" | "production" {
-  const explicitMode = (import.meta.env.VITE_CASHFREE_MODE as string | undefined)?.toLowerCase();
-  if (explicitMode === "sandbox" || explicitMode === "production") {
-    return explicitMode;
-  }
-
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.toLowerCase() ?? "";
-  if (apiBaseUrl.includes("sandbox") || apiBaseUrl.includes("staging")) {
-    return "sandbox";
-  }
   return "production";
 }
 

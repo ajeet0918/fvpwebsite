@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import axios from "axios";
 import { clearCustomerAccessToken, getCustomerAccessToken } from "./customerAuth";
+import { clearPortalAccessToken, getPortalAccessToken } from "./portalAuth";
 import type {
   CustomerAddress,
   CustomerAuthResponse,
@@ -8,6 +9,8 @@ import type {
   CustomerOrder,
   InquirySubmissionResponse,
   Order,
+  PortalAuthResponse,
+  PortalSummary,
   Product
 } from "../types/domain";
 
@@ -20,6 +23,10 @@ if (!apiBaseUrl) {
 export const API_BASE_URL = apiBaseUrl;
 
 const customerApiClient = axios.create({
+  baseURL: API_BASE_URL
+});
+
+const portalApiClient = axios.create({
   baseURL: API_BASE_URL
 });
 
@@ -36,6 +43,24 @@ customerApiClient.interceptors.response.use(
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       clearCustomerAccessToken();
+    }
+    return Promise.reject(error);
+  }
+);
+
+portalApiClient.interceptors.request.use((config) => {
+  const token = getPortalAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+portalApiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      clearPortalAccessToken();
     }
     return Promise.reject(error);
   }
@@ -79,6 +104,31 @@ export async function customerLoginApi(payload: { email: string; password: strin
 
 export async function customerGoogleAuthApi(idToken: string) {
   const response = await axios.post<CustomerAuthResponse>(`${API_BASE_URL}/customer/auth/google`, { idToken });
+  return response.data;
+}
+
+export async function portalLoginApi(payload: { username: string; password: string }) {
+  const response = await axios.post<PortalAuthResponse>(`${API_BASE_URL}/portal/auth/login`, payload);
+  return response.data;
+}
+
+export async function activatePortalAccountApi(payload: { token: string; password: string }) {
+  const response = await axios.post<{ message: string }>(`${API_BASE_URL}/portal/auth/activate`, payload);
+  return response.data;
+}
+
+export async function requestPortalPasswordResetApi(payload: { identifier: string }) {
+  const response = await axios.post<{ message: string }>(`${API_BASE_URL}/portal/auth/request-password-reset`, payload);
+  return response.data;
+}
+
+export async function resetPortalPasswordApi(payload: { token: string; password: string }) {
+  const response = await axios.post<{ message: string }>(`${API_BASE_URL}/portal/auth/reset-password`, payload);
+  return response.data;
+}
+
+export async function fetchPortalSummaryApi() {
+  const response = await portalApiClient.get<PortalSummary>("/portal/summary");
   return response.data;
 }
 
