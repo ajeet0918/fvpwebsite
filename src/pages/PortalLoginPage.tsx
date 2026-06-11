@@ -112,11 +112,16 @@ export function PortalLoginPage() {
 
   async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const email = loginEmail.trim();
+    if (!email || !loginPassword) {
+      setMessage("Enter your email and password.");
+      return;
+    }
     setLoading(true);
     setMessage(null);
     try {
       const response = await customerLoginApi({
-        email: loginEmail.trim(),
+        email,
         password: loginPassword
       });
       setCustomerAccessToken(response.accessToken);
@@ -130,14 +135,21 @@ export function PortalLoginPage() {
 
   async function handleSignupSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const fullName = signupName.trim();
+    const email = signupEmail.trim();
+    const phone = signupPhone.trim();
+    if (!fullName || !email || !phone || !signupPassword) {
+      setMessage("Complete the required account details.");
+      return;
+    }
     setLoading(true);
     setMessage(null);
     try {
       const response = await customerSignupApi({
-        fullName: signupName.trim(),
+        fullName,
         companyName: signupCompany.trim() || undefined,
-        email: signupEmail.trim(),
-        phone: signupPhone.trim(),
+        email,
+        phone,
         password: signupPassword
       });
       setCustomerAccessToken(response.accessToken);
@@ -150,140 +162,187 @@ export function PortalLoginPage() {
   }
 
   return (
-    <section className="section page-top section-soft">
+    <section className="auth-page auth-page-customer">
       <div className="container auth-container">
-        <div className="auth-surface">
-          <div className="section-heading section-heading-left auth-heading">
-            <span className="section-badge">My Account</span>
-            <h2>{mode === "login" ? "Login to Continue" : "Create Your Account"}</h2>
-            <p>Secure account login for direct order checkout, payment, and order history.</p>
+        <div className="auth-shell">
+          <div className="auth-brand">
+            <Link className="auth-logo" to="/" aria-label="FVP Purepick home">
+              <img src="/assets/logofvp.jpeg" alt="" />
+            </Link>
+            <span>FVP Purepick</span>
           </div>
 
-          <div className="auth-mode-toggle" role="tablist" aria-label="Auth mode">
-            <button
-              type="button"
-              className={mode === "login" ? "auth-toggle-button auth-toggle-active" : "auth-toggle-button"}
-              onClick={() => setMode("login")}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              className={mode === "signup" ? "auth-toggle-button auth-toggle-active" : "auth-toggle-button"}
-              onClick={() => setMode("signup")}
-            >
-              Signup
-            </button>
-          </div>
+          <div className="auth-surface auth-card">
+            <div className="auth-heading">
+              <span className="auth-kicker">Customer account</span>
+              <h1>{mode === "login" ? "Welcome back" : "Create your account"}</h1>
+              <p>{mode === "login" ? "Access your orders, invoices, and checkout details." : "Create one secure account for orders and checkout."}</p>
+            </div>
 
-          {mode === "login" ? (
-            <form className="order-form auth-form" onSubmit={handleLoginSubmit}>
-              <div className="form-grid two-up">
-                <label>
-                  Email
-                  <input type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} required />
-                </label>
-                <label>
-                  Password
-                  <div className="password-input-wrap">
+            <div className="auth-mode-toggle" role="tablist" aria-label="Auth mode">
+              <button
+                type="button"
+                className={mode === "login" ? "auth-toggle-button auth-toggle-active" : "auth-toggle-button"}
+                onClick={() => setMode("login")}
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                className={mode === "signup" ? "auth-toggle-button auth-toggle-active" : "auth-toggle-button"}
+                onClick={() => setMode("signup")}
+              >
+                Signup
+              </button>
+            </div>
+
+            {mode === "login" ? (
+              <form className="auth-form" onSubmit={handleLoginSubmit}>
+                <div className="auth-field-stack">
+                  <label htmlFor="customer-login-email">
+                    Email
                     <input
-                      type={showLoginPassword ? "text" : "password"}
-                      value={loginPassword}
-                      onChange={(event) => setLoginPassword(event.target.value)}
+                      id="customer-login-email"
+                      type="email"
+                      value={loginEmail}
+                      onChange={(event) => setLoginEmail(event.target.value)}
+                      autoComplete="email"
+                      placeholder="name@company.com"
                       required
                     />
-                    <button
-                      type="button"
-                      className="password-toggle-button"
-                      onClick={() => setShowLoginPassword((current) => !current)}
-                      aria-label={showLoginPassword ? "Hide password" : "Show password"}
-                      title={showLoginPassword ? "Hide password" : "Show password"}
-                    >
-                      {showLoginPassword ? (
-                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                          <path d="M3 4.27 4.28 3 21 19.72 19.73 21l-2.6-2.6A11.8 11.8 0 0 1 12 20C7 20 2.73 16.89 1 12c.73-2.06 2-3.88 3.62-5.32L3 4.27Zm6.5 6.5 4.23 4.23A3.95 3.95 0 0 1 12 15.5 4 4 0 0 1 8 11.5c0-.64.15-1.24.42-1.73L9.5 10.77ZM12 6c5 0 9.27 3.11 11 8a11.8 11.8 0 0 1-2.66 4.07l-2.2-2.2A8.54 8.54 0 0 0 20.86 12C19.22 8.23 15.83 6 12 6c-1.43 0-2.8.31-4.04.88L6.43 5.35A11.8 11.8 0 0 1 12 6Z" fill="currentColor"/>
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                          <path d="M12 5c5 0 9.27 3.11 11 8-1.73 4.89-6 8-11 8S2.73 17.89 1 13c1.73-4.89 6-8 11-8Zm0 2C8.17 7 4.78 9.23 3.14 13 4.78 16.77 8.17 19 12 19s7.22-2.23 8.86-6C19.22 9.23 15.83 7 12 7Zm0 2.5A3.5 3.5 0 1 1 8.5 13 3.5 3.5 0 0 1 12 9.5Zm0 2A1.5 1.5 0 1 0 13.5 13 1.5 1.5 0 0 0 12 11.5Z" fill="currentColor"/>
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </label>
-              </div>
-              <div className="form-actions">
+                  </label>
+                  <label htmlFor="customer-login-password">
+                    Password
+                    <div className="password-input-wrap">
+                      <input
+                        id="customer-login-password"
+                        type={showLoginPassword ? "text" : "password"}
+                        value={loginPassword}
+                        onChange={(event) => setLoginPassword(event.target.value)}
+                        autoComplete="current-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-button"
+                        onClick={() => setShowLoginPassword((current) => !current)}
+                        aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                        title={showLoginPassword ? "Hide password" : "Show password"}
+                      >
+                        {showLoginPassword ? (
+                          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M3 4.27 4.28 3 21 19.72 19.73 21l-2.6-2.6A11.8 11.8 0 0 1 12 20C7 20 2.73 16.89 1 12c.73-2.06 2-3.88 3.62-5.32L3 4.27Zm6.5 6.5 4.23 4.23A3.95 3.95 0 0 1 12 15.5 4 4 0 0 1 8 11.5c0-.64.15-1.24.42-1.73L9.5 10.77ZM12 6c5 0 9.27 3.11 11 8a11.8 11.8 0 0 1-2.66 4.07l-2.2-2.2A8.54 8.54 0 0 0 20.86 12C19.22 8.23 15.83 6 12 6c-1.43 0-2.8.31-4.04.88L6.43 5.35A11.8 11.8 0 0 1 12 6Z" fill="currentColor"/>
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M12 5c5 0 9.27 3.11 11 8-1.73 4.89-6 8-11 8S2.73 17.89 1 13c1.73-4.89 6-8 11-8Zm0 2C8.17 7 4.78 9.23 3.14 13 4.78 16.77 8.17 19 12 19s7.22-2.23 8.86-6C19.22 9.23 15.83 7 12 7Zm0 2.5A3.5 3.5 0 1 1 8.5 13 3.5 3.5 0 0 1 12 9.5Zm0 2A1.5 1.5 0 1 0 13.5 13 1.5 1.5 0 0 0 12 11.5Z" fill="currentColor"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </label>
+                </div>
                 <button type="submit" className="button button-primary auth-submit" disabled={loading}>
                   {loading ? "Signing in..." : "Login"}
                 </button>
-                <Link className="button button-secondary" to="/partner/login">Partner Login</Link>
-              </div>
-            </form>
-          ) : (
-            <form className="order-form auth-form" onSubmit={handleSignupSubmit}>
-              <div className="form-grid two-up">
-                <label>
-                  Full Name
-                  <input value={signupName} onChange={(event) => setSignupName(event.target.value)} required />
-                </label>
-                <label>
-                  Company Name
-                  <input value={signupCompany} onChange={(event) => setSignupCompany(event.target.value)} placeholder="Optional" />
-                </label>
-                <label>
-                  Email
-                  <input type="email" value={signupEmail} onChange={(event) => setSignupEmail(event.target.value)} required />
-                </label>
-                <label>
-                  Phone
-                  <input value={signupPhone} onChange={(event) => setSignupPhone(event.target.value)} required />
-                </label>
-                <label>
-                  Password
-                  <div className="password-input-wrap">
+              </form>
+            ) : (
+              <form className="auth-form" onSubmit={handleSignupSubmit}>
+                <div className="form-grid two-up auth-signup-grid">
+                  <label htmlFor="customer-signup-name">
+                    Full name
                     <input
-                      type={showSignupPassword ? "text" : "password"}
-                      value={signupPassword}
-                      onChange={(event) => setSignupPassword(event.target.value)}
-                      minLength={8}
+                      id="customer-signup-name"
+                      value={signupName}
+                      onChange={(event) => setSignupName(event.target.value)}
+                      autoComplete="name"
                       required
                     />
-                    <button
-                      type="button"
-                      className="password-toggle-button"
-                      onClick={() => setShowSignupPassword((current) => !current)}
-                      aria-label={showSignupPassword ? "Hide password" : "Show password"}
-                      title={showSignupPassword ? "Hide password" : "Show password"}
-                    >
-                      {showSignupPassword ? (
-                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                          <path d="M3 4.27 4.28 3 21 19.72 19.73 21l-2.6-2.6A11.8 11.8 0 0 1 12 20C7 20 2.73 16.89 1 12c.73-2.06 2-3.88 3.62-5.32L3 4.27Zm6.5 6.5 4.23 4.23A3.95 3.95 0 0 1 12 15.5 4 4 0 0 1 8 11.5c0-.64.15-1.24.42-1.73L9.5 10.77ZM12 6c5 0 9.27 3.11 11 8a11.8 11.8 0 0 1-2.66 4.07l-2.2-2.2A8.54 8.54 0 0 0 20.86 12C19.22 8.23 15.83 6 12 6c-1.43 0-2.8.31-4.04.88L6.43 5.35A11.8 11.8 0 0 1 12 6Z" fill="currentColor"/>
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                          <path d="M12 5c5 0 9.27 3.11 11 8-1.73 4.89-6 8-11 8S2.73 17.89 1 13c1.73-4.89 6-8 11-8Zm0 2C8.17 7 4.78 9.23 3.14 13 4.78 16.77 8.17 19 12 19s7.22-2.23 8.86-6C19.22 9.23 15.83 7 12 7Zm0 2.5A3.5 3.5 0 1 1 8.5 13 3.5 3.5 0 0 1 12 9.5Zm0 2A1.5 1.5 0 1 0 13.5 13 1.5 1.5 0 0 0 12 11.5Z" fill="currentColor"/>
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </label>
-              </div>
-              <div className="form-actions">
+                  </label>
+                  <label htmlFor="customer-signup-company">
+                    Company name
+                    <input
+                      id="customer-signup-company"
+                      value={signupCompany}
+                      onChange={(event) => setSignupCompany(event.target.value)}
+                      autoComplete="organization"
+                      placeholder="Optional"
+                    />
+                  </label>
+                  <label htmlFor="customer-signup-email">
+                    Email
+                    <input
+                      id="customer-signup-email"
+                      type="email"
+                      value={signupEmail}
+                      onChange={(event) => setSignupEmail(event.target.value)}
+                      autoComplete="email"
+                      required
+                    />
+                  </label>
+                  <label htmlFor="customer-signup-phone">
+                    Phone
+                    <input
+                      id="customer-signup-phone"
+                      value={signupPhone}
+                      onChange={(event) => setSignupPhone(event.target.value)}
+                      autoComplete="tel"
+                      inputMode="tel"
+                      required
+                    />
+                  </label>
+                  <label className="auth-wide-field" htmlFor="customer-signup-password">
+                    Password
+                    <div className="password-input-wrap">
+                      <input
+                        id="customer-signup-password"
+                        type={showSignupPassword ? "text" : "password"}
+                        value={signupPassword}
+                        onChange={(event) => setSignupPassword(event.target.value)}
+                        autoComplete="new-password"
+                        minLength={8}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-button"
+                        onClick={() => setShowSignupPassword((current) => !current)}
+                        aria-label={showSignupPassword ? "Hide password" : "Show password"}
+                        title={showSignupPassword ? "Hide password" : "Show password"}
+                      >
+                        {showSignupPassword ? (
+                          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M3 4.27 4.28 3 21 19.72 19.73 21l-2.6-2.6A11.8 11.8 0 0 1 12 20C7 20 2.73 16.89 1 12c.73-2.06 2-3.88 3.62-5.32L3 4.27Zm6.5 6.5 4.23 4.23A3.95 3.95 0 0 1 12 15.5 4 4 0 0 1 8 11.5c0-.64.15-1.24.42-1.73L9.5 10.77ZM12 6c5 0 9.27 3.11 11 8a11.8 11.8 0 0 1-2.66 4.07l-2.2-2.2A8.54 8.54 0 0 0 20.86 12C19.22 8.23 15.83 6 12 6c-1.43 0-2.8.31-4.04.88L6.43 5.35A11.8 11.8 0 0 1 12 6Z" fill="currentColor"/>
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M12 5c5 0 9.27 3.11 11 8-1.73 4.89-6 8-11 8S2.73 17.89 1 13c1.73-4.89 6-8 11-8Zm0 2C8.17 7 4.78 9.23 3.14 13 4.78 16.77 8.17 19 12 19s7.22-2.23 8.86-6C19.22 9.23 15.83 7 12 7Zm0 2.5A3.5 3.5 0 1 1 8.5 13 3.5 3.5 0 0 1 12 9.5Zm0 2A1.5 1.5 0 1 0 13.5 13 1.5 1.5 0 0 0 12 11.5Z" fill="currentColor"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </label>
+                </div>
                 <button type="submit" className="button button-primary auth-submit" disabled={loading}>
                   {loading ? "Creating..." : "Create Account"}
                 </button>
+              </form>
+            )}
+
+            {googleClientId ? (
+              <div className="google-auth-panel">
+                <span>Or continue with Google</span>
+                <div id="google-auth-button" />
               </div>
-            </form>
-          )}
+            ) : null}
 
-          {googleClientId ? (
-            <div className="google-auth-panel">
-              <p>Or continue with Google</p>
-              <div id="google-auth-button" />
+            {message ? <p className="form-message form-message-error" role="status" aria-live="polite">{message}</p> : null}
+
+            <div className="auth-footer-switch">
+              <span>Farmer, investor, or collection partner?</span>
+              <Link to="/partner/login">Use partner login</Link>
             </div>
-          ) : null}
-
-          {message ? <p className="form-message form-message-error">{message}</p> : null}
+          </div>
         </div>
       </div>
     </section>
