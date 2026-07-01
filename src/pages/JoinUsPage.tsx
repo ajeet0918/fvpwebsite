@@ -83,7 +83,10 @@ export function JoinUsPage() {
   }, [searchParams]);
 
   const termsPdfPath = useMemo(() => {
-    if (joinType === "FARMER" || joinType === "COLLECTION_HUB") {
+    if (joinType === "COLLECTION_HUB") {
+      return "/assets/collection-hub-terms.pdf";
+    }
+    if (joinType === "FARMER") {
       return "/assets/farmer-terms.pdf";
     }
     return "/assets/investor-terms.pdf";
@@ -290,7 +293,7 @@ Admin will verify and share next onboarding steps for your collection hub.`
             <label>
               Terms & Conditions (PDF)
               <a className="button button-secondary join-pdf-link" href={termsPdfPath} target="_blank" rel="noreferrer">
-                View {joinType === "INVESTOR" ? "Investor" : "Farmer/Hub"} Terms PDF
+                View {joinType === "INVESTOR" ? "Investor" : joinType === "FARMER" ? "Farmer" : "Collection Hub"} Terms PDF
               </a>
             </label>
           </div>
