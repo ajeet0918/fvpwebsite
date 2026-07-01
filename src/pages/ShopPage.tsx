@@ -3,22 +3,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import { API_BASE_URL, fetchProductsApi, readErrorMessage } from "../lib/api";
 import { addToCart } from "../lib/cart";
 import type { Product } from "../types/domain";
-import { localProductImages } from "../data/productImages";
+import { resolveProductImage, setProductImageFallback } from "../data/productImages";
 
-function resolveApiOrigin(baseUrl: string) {
-  try {
-    return new URL(baseUrl).origin;
-  } catch {
-    return baseUrl;
-  }
-}
-
-function resolveProductImage(product: Product) {
-  if (product.imageUrl) {
-    return product.imageUrl.startsWith("/") ? `${resolveApiOrigin(API_BASE_URL)}${product.imageUrl}` : product.imageUrl;
-  }
-  return localProductImages[product.slug] ?? "/assets/product-seeds.jpg";
-}
+const WHATSAPP_QUOTE_URL = "https://wa.me/919650035272?text=I%20want%20a%20bulk%20quote%20from%20FVP%20Purepick.";
 
 export function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -76,8 +63,8 @@ export function ShopPage() {
       <div className="container">
         <div className="section-heading section-heading-left">
           <span className="section-badge">Shop</span>
-          <h2>Product Catalog</h2>
-          <p>Browse real catalog products, review details, and proceed to order flow.</p>
+          <h2>Wholesale Product Catalog</h2>
+          <p>Browse active wholesale items, check MOQ, and request a current bulk quote before dispatch.</p>
         </div>
 
         <div className="shop-filters">
@@ -100,7 +87,12 @@ export function ShopPage() {
           ))}
         </div>
 
-        {error ? <div className="banner-error">{error}</div> : null}
+        {error ? (
+          <div className="banner-error catalog-error">
+            <span>{error}</span>
+            <a href={WHATSAPP_QUOTE_URL} target="_blank" rel="noreferrer">Request quote on WhatsApp</a>
+          </div>
+        ) : null}
         {cartMessage ? <p className="form-message">{cartMessage}</p> : null}
         {loading ? <p>Loading catalog...</p> : null}
 
@@ -109,17 +101,26 @@ export function ShopPage() {
             <article key={product.id} className="product-card">
               <div className="product-media">
                 <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
-                <img src={resolveProductImage(product)} alt={product.name} />
-                <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
-                  {product.name.charAt(0)}
-                </div>
+                <img
+                  src={resolveProductImage(product, API_BASE_URL)}
+                  alt={product.name}
+                  onError={(event) => setProductImageFallback(event.currentTarget, product)}
+                />
+                <span className="product-status-badge">{product.status === "ACTIVE" ? "Available" : "Check availability"}</span>
               </div>
               <div className="product-body">
                 <span className="product-category">{product.category}</span>
                 <h3>{product.name}</h3>
                 <p>{product.shortDescription}</p>
+                <div className="product-card-meta">
+                  <span>MOQ: {product.moq || "Ask on quote"}</span>
+                  <span>{product.price ? "Rate listed" : "Price on request"}</span>
+                </div>
                 <div className="shop-card-actions">
-                  <Link className="button button-secondary button-small" to={`/shop/${product.slug}`}>View Details</Link>
+                  <Link className="button button-secondary button-small" to={`/shop/${product.slug}`}>View Catalog</Link>
+                  <a className="button button-secondary button-small" href={`${WHATSAPP_QUOTE_URL}%20Product:%20${encodeURIComponent(product.name)}`} target="_blank" rel="noreferrer">
+                    Get Bulk Quote
+                  </a>
                   <button type="button" className="button button-primary button-small" onClick={() => handleAddToCart(product.slug)}>
                     Add To Cart
                   </button>
@@ -129,10 +130,12 @@ export function ShopPage() {
           ))}
         </div>
 
-        {!loading && filteredProducts.length === 0 ? <p>No products found for this category.</p> : null}
-        <div className="home-shop-cta">
-          <Link className="button button-primary" to="/checkout">Go To Checkout</Link>
-        </div>
+        {!loading && !error && filteredProducts.length === 0 ? <p>No products found for this category.</p> : null}
+        {!error ? (
+          <div className="home-shop-cta">
+            <Link className="button button-primary" to="/checkout">Go To Checkout</Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );

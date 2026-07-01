@@ -366,7 +366,6 @@ export function readErrorMessage(error: unknown, fallback: string) {
   if (axios.isAxiosError(error)) {
     return (
       (typeof error.response?.data?.message === "string" && error.response.data.message) ||
-      error.message ||
       fallback
     );
   }

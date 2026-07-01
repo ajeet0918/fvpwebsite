@@ -7,7 +7,7 @@ const navLinks = [
   { key: "contact", name: "Contact", type: "anchor", path: "/#contact", sectionId: "contact" },
   { key: "join", name: "Join With Us", type: "route", path: "/join-us" },
   { key: "products", name: "Shop", type: "route", path: "/shop" },
-  { key: "checkout", name: "Checkout", type: "route", path: "/checkout" },
+  { key: "checkout", name: "Bulk Quote", type: "route", path: "/checkout" },
   { key: "portal", name: "My Account", type: "route", path: "/portal/login" }
 ] as const;
 
@@ -222,9 +222,14 @@ export function PublicLayout() {
               </span>
             </NavLink>
             <p>
-              Wholesale agricultural products for businesses and growers. Public website includes catalog,
-              direct checkout, and account-based order history.
+              Wholesale vegetables, seeds, fertilizers, and farm supplies for buyers who need MOQ,
+              packaging, delivery, and quote clarity before dispatch.
             </p>
+            <div className="footer-business-details">
+              <span>Service area: Owner to confirm delivery zones</span>
+              <span>GST: Owner to add</span>
+              <span>Registered address: Owner to add</span>
+            </div>
           </div>
 
           <div className="footer-column">
@@ -235,21 +240,20 @@ export function PublicLayout() {
               <li><a href="/#about">About</a></li>
               <li><a href="/#contact">Contact</a></li>
               <li><NavLink to="/join-us">Join With Us</NavLink></li>
-              <li><NavLink to="/checkout">Checkout</NavLink></li>
+              <li><NavLink to="/checkout">Bulk Quote</NavLink></li>
               <li><NavLink to="/portal/login">My Account</NavLink></li>
             </ul>
           </div>
 
           <div className="footer-column">
-            <h3>Public Features</h3>
+            <h3>Buyer Support</h3>
             <ul>
-              <li><span>Product catalog</span></li>
-              <li><span>Investor onboarding</span></li>
-              <li><span>Farmer registration</span></li>
-              <li><span>Email/Google account login</span></li>
-              <li><span>Direct order checkout</span></li>
-              <li><span>Order history in account</span></li>
-              <li><span>Contact and support</span></li>
+              <li><span>Bulk product catalog</span></li>
+              <li><span>MOQ and packaging confirmation</span></li>
+              <li><span>Fresh produce and farm-input sourcing</span></li>
+              <li><span>WhatsApp quote support</span></li>
+              <li><span>Checkout and order history</span></li>
+              <li><span>Farmer and collection hub onboarding</span></li>
             </ul>
           </div>
 
@@ -258,6 +262,8 @@ export function PublicLayout() {
             <div className="contact-list">
               <a href="tel:+919650035272">+(91)-9650035272</a>
               <a href="mailto:contact@fvpurepick.com">contact@fvpurepick.com</a>
+              <span>WhatsApp: +91 9650035272</span>
+              <span>Support: Quote, order, delivery coordination</span>
               <a className="button button-whatsapp" href="https://wa.me/919650035272" target="_blank" rel="noreferrer">
                 WhatsApp Us
               </a>

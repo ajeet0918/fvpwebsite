@@ -2,15 +2,25 @@ import { FormEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { readErrorMessage, submitLeadApi } from "../lib/api";
 import type { Product } from "../types/domain";
+import { setProductImageFallback } from "../data/productImages";
+
+const WHATSAPP_URL = "https://wa.me/919650035272?text=I%20want%20a%20bulk%20quote%20from%20FVP%20Purepick.";
 
 const serviceCards = [
-  ["Seeds", "High-quality seeds for cereals, grains, vegetables, fruits, and legumes."],
+  ["Bulk Vegetables", "Fresh produce and staples sourced for retailers, kitchens, and local distribution."],
+  ["Seeds", "High-quality seed stock for cereals, grains, vegetables, fruits, and legumes."],
   ["Fertilizers", "Organic and chemical fertilizers selected for performance and soil compatibility."],
-  ["Pesticides and Insecticides", "Crop protection products chosen for safety, compliance, and efficacy."],
-  ["Animal Feed", "Nutritious feed options for cattle, poultry, and other livestock."],
-  ["Agricultural Tools and Equipment", "Essential hand tools, power tools, and machinery support products."],
-  ["Food Products", "Wholesale grains, pulses, spices, and selected processed food items."]
+  ["Crop Protection", "Pesticides and insecticides selected for practical farm-use requirements."],
+  ["Farm Supplies", "Essential tools, equipment, packaging, and day-to-day field support products."],
+  ["Food Staples", "Wholesale grains, pulses, spices, and selected processed food items."]
 ] as const;
+
+const heroProofItems = [
+  "Bulk vegetables, seeds, fertilizers, and farm supplies",
+  "MOQ shown before checkout or quote discussion",
+  "Delivery coverage confirmed before dispatch",
+  "WhatsApp quote support for urgent buyer requirements"
+];
 
 const staticProductCards: Product[] = [
   {
@@ -105,6 +115,14 @@ const staticProductCards: Product[] = [
   }
 ];
 
+function getCardAvailability(product: Product) {
+  if (product.status !== "ACTIVE") {
+    return "Check availability";
+  }
+
+  return product.featured ? "Featured supply item" : "Available for inquiry";
+}
+
 export function HomePage() {
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
@@ -146,17 +164,17 @@ export function HomePage() {
         <div className="container hero-content">
           <div className="hero-grid">
             <div className="hero-copy">
-              <span className="eyebrow">Wholesale sourcing for modern agriculture businesses</span>
+              <span className="eyebrow">Wholesale agriculture supply for serious buyers</span>
               <h1>
-                Premium Wholesale
-                <span>Agricultural Products</span>
+                Bulk Farm Products
+                <span>Quoted With Clarity</span>
               </h1>
               <p className="hero-lead">
-                Discover catalog products, submit bulk order requests, join investor programs, and onboard as a
-                farming partner from one public experience.
+                Source vegetables, seeds, fertilizers, and farm supplies with MOQ-led catalog browsing,
+                delivery coordination, and quick WhatsApp quote support.
               </p>
               <div className="hero-feature-list">
-                {["Live product catalog", "Investor onboarding", "Farmer registration", "My account order history"].map((item) => (
+                {heroProofItems.map((item) => (
                   <div key={item} className="hero-feature-item">
                     <span className="hero-check">OK</span>
                     <span>{item}</span>
@@ -164,10 +182,9 @@ export function HomePage() {
                 ))}
               </div>
               <div className="hero-actions hero-actions-uniform">
-                <Link className="button button-primary button-large hero-cta" to="/join-us?type=investor">Buy / Invest Now</Link>
-                <Link className="button button-primary button-large hero-cta" to="/join-us?type=farmer">Join as Farmer</Link>
-                <Link className="button button-primary button-large hero-cta" to="/shop">Shop & Checkout</Link>
-                <Link className="button button-primary button-large hero-cta" to="/portal/login">My Account</Link>
+                <Link className="button button-primary button-large hero-cta hero-cta-primary" to="/shop">Shop Catalog</Link>
+                <Link className="button button-light button-large hero-cta" to="/checkout">Request Bulk Quote</Link>
+                <a className="button button-whatsapp button-large hero-cta" href={WHATSAPP_URL} target="_blank" rel="noreferrer">WhatsApp Us</a>
               </div>
             </div>
 
@@ -176,9 +193,9 @@ export function HomePage() {
               <div className="hero-panel-card">
                 <img src="/assets/hero-card.jpg" alt="Fresh Produce" />
                 <div className="hero-panel-copy">
-                    <h3>Public Experience</h3>
+                    <h3>Buyer Desk</h3>
                     <div className="hero-panel-list">
-                    {["Catalog browsing", "Investor and farmer intake", "Order request and account history", "Marketing and contact pages"].map((item) => (
+                    {["Bulk quote before dispatch", "MOQ and packaging discussion", "Fresh produce and farm-input sourcing", "Phone, email, and WhatsApp support"].map((item) => (
                       <div key={item} className="hero-panel-item">
                         <span className="hero-panel-bullet">-</span>
                         <span>{item}</span>
@@ -197,28 +214,38 @@ export function HomePage() {
         <div className="container">
           <div className="section-heading">
             <span className="section-badge">Our Products</span>
-            <h2>Wholesale Agricultural Products</h2>
-            <p>Featured categories below link to full dynamic shop catalog.</p>
+            <h2>Wholesale Categories Buyers Actually Ask For</h2>
+            <p>Start from common supply categories, then confirm grade, packaging, and delivery coverage with our team.</p>
           </div>
 
           <div className="product-grid">
-            {productCards.map((product, index) => (
-              <Link key={product.id} to={`/shop?category=${encodeURIComponent(product.category)}`} className="product-card-link">
-                <article className="product-card">
+            {productCards.map((product) => (
+                <article key={product.id} className="product-card">
                   <div className="product-media">
-                    <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
-                    <img src={product.imageUrl ?? "/assets/product-seeds.jpg"} alt={product.name} />
-                    <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
-                      {product.name.charAt(0)}
-                    </div>
+                    <div className="product-wash product-wash-green" />
+                    <img
+                      src={product.imageUrl ?? "/assets/product-seeds.jpg"}
+                      alt={product.name}
+                      onError={(event) => setProductImageFallback(event.currentTarget, product)}
+                    />
+                    <span className="product-status-badge">{getCardAvailability(product)}</span>
                   </div>
                   <div className="product-body">
                     <span className="product-category">{product.category}</span>
                     <h3>{product.name}</h3>
                     <p>{product.shortDescription}</p>
+                    <div className="product-card-meta">
+                      <span>MOQ: {product.moq}</span>
+                      <span>{product.price ? "Rate listed" : "Quote before order"}</span>
+                    </div>
+                    <div className="shop-card-actions">
+                      <Link className="button button-secondary button-small" to={`/shop?category=${encodeURIComponent(product.category)}`}>View Catalog</Link>
+                      <a className="button button-primary button-small" href={`${WHATSAPP_URL}%20Category:%20${encodeURIComponent(product.category)}`} target="_blank" rel="noreferrer">
+                        Get Bulk Quote
+                      </a>
+                    </div>
                   </div>
                 </article>
-              </Link>
             ))}
           </div>
         </div>
@@ -228,33 +255,45 @@ export function HomePage() {
         <div className="container">
           <div className="section-heading">
             <span className="section-badge">About Us</span>
-            <h2>Why Choose FVP Pure Pick Suppliers OPC Pvt. Ltd.?</h2>
+            <h2>How FVP Purepick Handles Wholesale Supply</h2>
             <p>
-              We deliver premium, reliable, and diverse agricultural products at wholesale prices with a
-              customer-first approach.
+              We keep the buying process practical: confirm requirement, check source and packaging,
+              coordinate delivery, and keep the buyer informed before dispatch.
             </p>
           </div>
 
           <div className="about-layout">
             <article className="about-card">
-              <h3>Our Promise</h3>
+              <h3>Quality Check Process</h3>
               <p>
-                FVP Purepick supports farmers, distributors, and agri businesses with quality-assured products,
-                competitive bulk pricing, and reliable fulfillment.
-              </p>
-              <p>
-                We build long-term partnerships through transparent communication, practical guidance, and
-                flexible supply support.
+                Product grade, packaging, MOQ, and current availability are checked before final quote sharing.
+                For fresh produce, buyer expectations are confirmed before dispatch.
               </p>
             </article>
 
             <article className="about-card">
-              <h3>Why Businesses Trust Us</h3>
+              <h3>Sourcing and Farmer Network</h3>
+              <p>
+                The website supports farmer and collection-hub onboarding so FVP Purepick can build cleaner
+                supply visibility over time.
+              </p>
+            </article>
+
+            <article className="about-card">
+              <h3>Delivery Coordination</h3>
+              <p>
+                Delivery area, dispatch timing, packaging size, and unloading expectations are confirmed during
+                the quote process. Exact service zones should be updated by the owner.
+              </p>
+            </article>
+
+            <article className="about-card">
+              <h3>Support Process</h3>
               <ul className="about-list">
-                <li>Quality assurance and verified sourcing standards</li>
-                <li>Competitive wholesale pricing and bulk order flexibility</li>
-                <li>Reliable supply chain and timely delivery coordination</li>
-                <li>Dedicated support with practical, customer-focused guidance</li>
+                <li>Catalog inquiry through shop, checkout, phone, or WhatsApp</li>
+                <li>MOQ and price confirmation before buyer commitment</li>
+                <li>Order notes captured for packaging and delivery requirements</li>
+                <li>Account login available for checkout and order history</li>
               </ul>
             </article>
           </div>
@@ -317,8 +356,12 @@ export function HomePage() {
         <div className="container">
           <div className="section-heading">
             <span className="section-badge">Contact</span>
-            <h2>Share Your Details</h2>
-            <p>Drop your name, email, and phone number. We will reach out for wholesale assistance.</p>
+            <h2>Request a Wholesale Call Back</h2>
+            <p>Share your name, email, and phone number. For urgent rates or Fresh Potato inquiries, use WhatsApp.</p>
+          </div>
+          <div className="contact-action-row">
+            <a className="button button-whatsapp" href={WHATSAPP_URL} target="_blank" rel="noreferrer">WhatsApp Bulk Quote</a>
+            <a className="button button-secondary" href="tel:+919650035272">Call +91 9650035272</a>
           </div>
           <form className="lead-form" onSubmit={handleLeadSubmit}>
             <label>

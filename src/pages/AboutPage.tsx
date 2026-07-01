@@ -5,15 +5,15 @@ export function AboutPage() {
     <div className="page">
       <section className="panel">
         <SectionTitle
-          eyebrow="About The Brand"
-          title="A wholesale agriculture identity built for trust and scale"
-          description="This starter positions the business as a procurement partner for farmers, distributors, and retailers instead of a generic catalog website."
+          eyebrow="About FVP Purepick"
+          title="Wholesale agriculture supply built around clarity"
+          description="FVP Purepick supports buyers with catalog browsing, MOQ-led quotes, delivery coordination, and practical support for agriculture supply requirements."
         />
         <div className="card narrative">
           <p>
-            Verdant Harvest Supply is framed as a B2B agriculture brand focused on quality sourcing,
-            strong supply relationships, and responsive bulk-order support. The backend is structured
-            so content can evolve into a managed product and inquiry system.
+            FVP Purepick is positioned as a wholesale agriculture supplier for vegetables, seeds,
+            fertilizers, farm supplies, and food staples. Product grade, packaging, delivery area,
+            and current rates should be confirmed before dispatch.
           </p>
         </div>
       </section>
