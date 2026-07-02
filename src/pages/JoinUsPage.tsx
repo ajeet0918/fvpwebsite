@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   readErrorMessage,
   submitCollectionHubInquiryApi,
@@ -384,6 +384,7 @@ Admin will verify and share next onboarding steps for your collection hub.`
             <span>
               I have read and accepted the{" "}
               {joinType === "INVESTOR" ? "investor" : joinType === "FARMER" ? "farmer" : "collection hub"} terms and conditions.
+              {" "}Company website policies also apply where relevant. <Link to="/policies">View policies</Link>.
             </span>
           </div>
           <div className="form-actions">
