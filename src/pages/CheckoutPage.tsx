@@ -29,6 +29,7 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [cartItems, setCartItemsState] = useState(() => getCartItems());
+  const [policyAccepted, setPolicyAccepted] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressForm, setAddressForm] = useState({
     label: "",
@@ -96,6 +97,10 @@ export function CheckoutPage() {
     }
     if (!selectedAddressId) {
       setMessage("Add or select a shipping address.");
+      return;
+    }
+    if (!policyAccepted) {
+      setMessage("Accept the buyer policies before placing the order.");
       return;
     }
 
@@ -267,6 +272,24 @@ export function CheckoutPage() {
                 Order Notes
                 <textarea rows={3} value={customerNotes} onChange={(event) => setCustomerNotes(event.target.value)} />
               </label>
+
+              <div className="policy-acknowledgement">
+                <label className="inline-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={policyAccepted}
+                    onChange={(event) => setPolicyAccepted(event.target.checked)}
+                    required
+                  />
+                  <span>
+                    By placing an order, you agree to our{" "}
+                    <Link to="/policies#terms">Terms</Link>,{" "}
+                    <Link to="/policies#shipping-delivery">Shipping & Delivery</Link>,{" "}
+                    <Link to="/policies#cancellation">Cancellation</Link>, and{" "}
+                    <Link to="/policies#return-refund">Return/Refund</Link> policies.
+                  </span>
+                </label>
+              </div>
 
               <div className="form-actions">
                 <button type="submit" className="button button-primary" disabled={savingOrder || cartLines.length === 0}>

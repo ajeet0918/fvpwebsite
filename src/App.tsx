@@ -8,6 +8,7 @@ import { PartnerActivatePage } from "./pages/PartnerActivatePage";
 import { PartnerDashboardPage } from "./pages/PartnerDashboardPage";
 import { PartnerLoginPage } from "./pages/PartnerLoginPage";
 import { PartnerResetPasswordPage } from "./pages/PartnerResetPasswordPage";
+import { PoliciesPage } from "./pages/PoliciesPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { PortalDashboardPage } from "./pages/PortalDashboardPage";
 import { PortalLoginPage } from "./pages/PortalLoginPage";
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/partner/activate" element={<PartnerActivatePage />} />
         <Route path="/partner/reset-password" element={<PartnerResetPasswordPage />} />
         <Route path="/partner" element={<PartnerDashboardPage />} />
+        <Route path="/policies" element={<PoliciesPage />} />
         <Route path="/investor" element={<Navigate to="/join-us?type=investor" replace />} />
         <Route path="/farmer" element={<Navigate to="/join-us?type=farmer" replace />} />
         <Route path="/checkout" element={<CheckoutPage />} />

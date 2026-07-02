@@ -146,7 +146,6 @@ export function HomePage() {
         <div className="container hero-content">
           <div className="hero-grid">
             <div className="hero-copy">
-              <span className="eyebrow">Wholesale sourcing for modern agriculture businesses</span>
               <h1>
                 Premium Wholesale
                 <span>Agricultural Products</span>
@@ -155,19 +154,8 @@ export function HomePage() {
                 Discover catalog products, submit bulk order requests, join investor programs, and onboard as a
                 farming partner from one public experience.
               </p>
-              <div className="hero-feature-list">
-                {["Live product catalog", "Investor onboarding", "Farmer registration", "My account order history"].map((item) => (
-                  <div key={item} className="hero-feature-item">
-                    <span className="hero-check">OK</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
               <div className="hero-actions hero-actions-uniform">
-                <Link className="button button-primary button-large hero-cta" to="/join-us?type=investor">Buy / Invest Now</Link>
-                <Link className="button button-primary button-large hero-cta" to="/join-us?type=farmer">Join as Farmer</Link>
-                <Link className="button button-primary button-large hero-cta" to="/shop">Shop & Checkout</Link>
-                <Link className="button button-primary button-large hero-cta" to="/portal/login">My Account</Link>
+                <Link className="button button-primary button-large hero-cta" to="/shop">Shop Catalog</Link>
               </div>
             </div>
 
@@ -202,15 +190,11 @@ export function HomePage() {
           </div>
 
           <div className="product-grid">
-            {productCards.map((product, index) => (
+            {productCards.map((product) => (
               <Link key={product.id} to={`/shop?category=${encodeURIComponent(product.category)}`} className="product-card-link">
                 <article className="product-card">
                   <div className="product-media">
-                    <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
                     <img src={product.imageUrl ?? "/assets/product-seeds.jpg"} alt={product.name} />
-                    <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
-                      {product.name.charAt(0)}
-                    </div>
                   </div>
                   <div className="product-body">
                     <span className="product-category">{product.category}</span>
@@ -272,9 +256,8 @@ export function HomePage() {
           </div>
 
           <div className="service-grid">
-            {serviceCards.map(([title, description], index) => (
+            {serviceCards.map(([title, description]) => (
               <article key={title} className="service-card">
-                <div className="service-icon">{index + 1}</div>
                 <h3>{title}</h3>
                 <p>{description}</p>
               </article>
@@ -292,19 +275,16 @@ export function HomePage() {
           </div>
           <div className="service-grid">
             <article className="service-card">
-              <div className="service-icon">I</div>
               <h3>Investor Intake</h3>
               <p>Register investment intent and KYC details first; payment is handled after verification.</p>
               <p><Link to="/join-us?type=investor">Open investor form</Link></p>
             </article>
             <article className="service-card">
-              <div className="service-icon">F</div>
               <h3>Farmer Onboarding</h3>
               <p>Share farm profile, crop details, and required documents for partner onboarding.</p>
               <p><Link to="/join-us?type=farmer">Open farmer form</Link></p>
             </article>
             <article className="service-card">
-              <div className="service-icon">C</div>
               <h3>Collection Hub Setup</h3>
               <p>Open a local collection point and onboard for procurement, grading, and dispatch coordination.</p>
               <p><Link to="/join-us?type=collection-hub">Open collection hub form</Link></p>

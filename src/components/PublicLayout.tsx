@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { CookieBanner } from "./CookieBanner";
+import { policyLinks } from "../data/policies";
 
 const navLinks = [
   { key: "home", name: "Home", type: "route", path: "/" },
@@ -86,6 +88,7 @@ export function PublicLayout() {
     if (location.pathname.startsWith("/shop")) return "products";
     if (location.pathname.startsWith("/join-us")) return "join";
     if (location.pathname.startsWith("/checkout")) return "checkout";
+    if (location.pathname.startsWith("/policies")) return "";
     if (location.pathname.startsWith("/portal")) return "portal";
     return "";
   }, [activeSection, location.hash, location.pathname]);
@@ -222,34 +225,18 @@ export function PublicLayout() {
               </span>
             </NavLink>
             <p>
-              Wholesale agricultural products for businesses and growers. Public website includes catalog,
-              direct checkout, and account-based order history.
+              Wholesale agricultural products for businesses and growers, with clear buyer policies and support.
             </p>
           </div>
 
           <div className="footer-column">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><NavLink to="/">Home</NavLink></li>
-              <li><NavLink to="/shop">Shop</NavLink></li>
-              <li><a href="/#about">About</a></li>
-              <li><a href="/#contact">Contact</a></li>
-              <li><NavLink to="/join-us">Join With Us</NavLink></li>
-              <li><NavLink to="/checkout">Checkout</NavLink></li>
-              <li><NavLink to="/portal/login">My Account</NavLink></li>
-            </ul>
-          </div>
-
-          <div className="footer-column">
-            <h3>Public Features</h3>
-            <ul>
-              <li><span>Product catalog</span></li>
-              <li><span>Investor onboarding</span></li>
-              <li><span>Farmer registration</span></li>
-              <li><span>Email/Google account login</span></li>
-              <li><span>Direct order checkout</span></li>
-              <li><span>Order history in account</span></li>
-              <li><span>Contact and support</span></li>
+            <h3>Legal</h3>
+            <ul className="footer-legal-list">
+              {policyLinks.map((policy) => (
+                <li key={policy.slug}>
+                  <NavLink to={`/policies#${policy.slug}`}>{policy.title}</NavLink>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -271,6 +258,7 @@ export function PublicLayout() {
           </div>
         </div>
       </footer>
+      <CookieBanner />
     </div>
   );
 }
