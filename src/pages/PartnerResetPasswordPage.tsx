@@ -1,9 +1,15 @@
 import { FormEvent, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { readErrorMessage, resetPortalPasswordApi } from "../lib/api";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { changePortalPasswordApi, readErrorMessage, resetPortalPasswordWithTokenApi } from "../lib/api";
+import {
+  clearPortalPasswordResetRequired,
+  isPortalAuthenticated,
+  isPortalPasswordResetRequired
+} from "../lib/portalAuth";
 
 export function PartnerResetPasswordPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const token = useMemo(() => searchParams.get("token") ?? "", [searchParams]);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,13 +27,23 @@ export function PartnerResetPasswordPage() {
     }
     try {
       setLoading(true);
-      const response = await resetPortalPasswordApi({ token, password });
+      const response = token
+        ? await resetPortalPasswordWithTokenApi({ token, password })
+        : await changePortalPasswordApi({ password });
+      clearPortalPasswordResetRequired();
       setMessage(response.message);
+      if (!token) {
+        navigate("/partner", { replace: true });
+      }
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to reset password."));
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!token && !isPortalAuthenticated()) {
+    return <Navigate to="/partner/login?next=/partner/reset-password" replace />;
   }
 
   return (
@@ -36,11 +52,13 @@ export function PartnerResetPasswordPage() {
         <div className="auth-surface">
           <div className="section-heading section-heading-left auth-heading">
             <span className="section-badge">Password Reset</span>
-            <h2>Reset Portal Password</h2>
-            <p>Create a new password for your farmer, investor, or collection hub account.</p>
+            <h2>Set New Portal Password</h2>
+            <p>Create a new password before continuing to your farmer, investor, or collection hub dashboard.</p>
           </div>
 
-          {!token ? <p className="form-message form-message-error">Reset token is missing.</p> : null}
+          {!token && isPortalPasswordResetRequired() ? (
+            <p className="form-message">Your account is using a temporary password. Set a new password to continue.</p>
+          ) : null}
           {error ? <p className="form-message form-message-error">{error}</p> : null}
           {message ? <p className="form-message">{message}</p> : null}
 
@@ -68,10 +86,10 @@ export function PartnerResetPasswordPage() {
               </label>
             </div>
             <div className="form-actions">
-              <button type="submit" className="button button-primary" disabled={loading || !token}>
-                {loading ? "Saving..." : "Reset Password"}
+              <button type="submit" className="button button-primary" disabled={loading}>
+                {loading ? "Saving..." : "Save Password"}
               </button>
-              <Link className="button button-secondary" to="/partner/login">Go To Login</Link>
+              {token ? <Link className="button button-secondary" to="/partner/login">Go To Login</Link> : null}
             </div>
           </form>
         </div>

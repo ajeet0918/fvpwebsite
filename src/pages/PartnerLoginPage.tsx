@@ -5,14 +5,13 @@ import {
   readErrorMessage,
   requestPortalPasswordResetApi
 } from "../lib/api";
-import { setPortalAccessToken } from "../lib/portalAuth";
+import { setPortalAccessToken, setPortalPasswordResetRequired } from "../lib/portalAuth";
 
 export function PartnerLoginPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [resetIdentifier, setResetIdentifier] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -33,6 +32,11 @@ export function PartnerLoginPage() {
         password
       });
       setPortalAccessToken(response.accessToken);
+      setPortalPasswordResetRequired(response.resetPassword);
+      if (response.resetPassword) {
+        navigate("/partner/reset-password", { replace: true });
+        return;
+      }
       const next = searchParams.get("next");
       navigate(next && next.startsWith("/") ? next : "/partner", { replace: true });
     } catch (error) {
@@ -44,9 +48,9 @@ export function PartnerLoginPage() {
 
   async function handleReset(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const identifier = resetIdentifier.trim();
+    const identifier = username.trim();
     if (!identifier) {
-      setMessage("Enter your email or username.");
+      setMessage("Enter your username, email, or phone above first.");
       return;
     }
     setResetting(true);
@@ -129,21 +133,11 @@ export function PartnerLoginPage() {
 
             <form className="auth-reset-form" onSubmit={handleReset}>
               <div className="auth-reset-heading">
-                <h2>Reset access</h2>
-                <span>Use your email or username.</span>
+                <h2>Forgot password?</h2>
+                <span>We will send recovery instructions to the registered email on file.</span>
               </div>
-              <label htmlFor="partner-reset-identifier">
-                Email or username
-                <input
-                  id="partner-reset-identifier"
-                  value={resetIdentifier}
-                  onChange={(event) => setResetIdentifier(event.target.value)}
-                  autoComplete="username"
-                  required
-                />
-              </label>
               <button type="submit" className="button button-secondary" disabled={resetting}>
-                {resetting ? "Sending..." : "Send Reset Link"}
+                {resetting ? "Sending..." : "Send Temporary Password"}
               </button>
             </form>
 

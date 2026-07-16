@@ -1,22 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { API_BASE_URL, fetchProductBySlugApi, readErrorMessage } from "../lib/api";
+import { fetchProductBySlugApi, readErrorMessage } from "../lib/api";
 import { addToCart } from "../lib/cart";
+import { downloadPublicDocument, resolveDocumentImageUrl } from "../lib/documents";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
 
-function resolveApiOrigin(baseUrl: string) {
-  try {
-    return new URL(baseUrl).origin;
-  } catch {
-    return baseUrl;
-  }
+function resolveProductImage(product: Product) {
+  return resolveDocumentImageUrl({
+    documentId: product.imageDocumentId,
+    legacyUrl: product.imageUrl,
+    fallbackUrl: localProductImages[product.slug] ?? "/assets/product-seeds.jpg"
+  });
 }
 
-function resolveProductImage(product: Product) {
-  if (product.imageUrl) {
-    return product.imageUrl.startsWith("/") ? `${resolveApiOrigin(API_BASE_URL)}${product.imageUrl}` : product.imageUrl;
-  }
+function resolveFallbackImage(product: Product) {
   return localProductImages[product.slug] ?? "/assets/product-seeds.jpg";
 }
 
@@ -34,6 +32,7 @@ export function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
+  const [downloadingImage, setDownloadingImage] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -67,6 +66,22 @@ export function ProductDetailPage() {
     window.setTimeout(() => setMessage(null), 1800);
   }
 
+  async function handleDownloadImage() {
+    if (!product?.imageDocumentId) {
+      return;
+    }
+
+    try {
+      setDownloadingImage(true);
+      setError(null);
+      await downloadPublicDocument(product.imageDocumentId, product.slug);
+    } catch (errorValue) {
+      setError(readErrorMessage(errorValue, "Unable to download product image."));
+    } finally {
+      setDownloadingImage(false);
+    }
+  }
+
   return (
     <section className="section page-top">
       <div className="container">
@@ -83,7 +98,13 @@ export function ProductDetailPage() {
         {product ? (
           <article className="product-detail-card">
             <div className="product-detail-media">
-              <img src={resolveProductImage(product)} alt={product.name} />
+              <img
+                src={resolveProductImage(product)}
+                alt={product.name}
+                onError={(event) => {
+                  event.currentTarget.src = resolveFallbackImage(product);
+                }}
+              />
             </div>
             <div className="product-detail-content">
               <span className="product-category">{product.category}</span>
@@ -105,6 +126,16 @@ export function ProductDetailPage() {
                 <button type="button" className="button button-primary" onClick={handleAddToCart}>
                   Add To Cart
                 </button>
+                {product.imageDocumentId ? (
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => void handleDownloadImage()}
+                    disabled={downloadingImage}
+                  >
+                    {downloadingImage ? "Downloading..." : "Download Image"}
+                  </button>
+                ) : null}
                 <Link className="button button-primary" to="/checkout">
                   Checkout
                 </Link>

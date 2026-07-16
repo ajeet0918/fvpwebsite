@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { fetchPortalSummaryApi, readErrorMessage } from "../lib/api";
-import { clearPortalAccessToken, isPortalAuthenticated } from "../lib/portalAuth";
+import { clearPortalAccessToken, isPortalAuthenticated, isPortalPasswordResetRequired } from "../lib/portalAuth";
 import type { PortalSummary } from "../types/domain";
 
 function formatCurrency(value: number) {
@@ -41,6 +41,10 @@ export function PartnerDashboardPage() {
 
   if (!isPortalAuthenticated()) {
     return <Navigate to="/partner/login" replace />;
+  }
+
+  if (isPortalPasswordResetRequired()) {
+    return <Navigate to="/partner/reset-password" replace />;
   }
 
   return (

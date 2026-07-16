@@ -6,6 +6,7 @@ export type Product = {
   price: number | null;
   priceUnit: string;
   status: "ACTIVE" | "INACTIVE";
+  imageDocumentId: string | null;
   imageUrl: string | null;
   shortDescription: string;
   longDescription: string;
@@ -164,6 +165,7 @@ export type PortalAuthResponse = {
   role: string;
   username: string;
   userType: "FARMER" | "INVESTOR" | "COLLECTION_HUB";
+  resetPassword: boolean;
 };
 
 export type PortalSummary = {

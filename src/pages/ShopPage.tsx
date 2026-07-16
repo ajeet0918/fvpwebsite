@@ -1,22 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { API_BASE_URL, fetchProductsApi, readErrorMessage } from "../lib/api";
+import { fetchProductsApi, readErrorMessage } from "../lib/api";
 import { addToCart } from "../lib/cart";
+import { resolveDocumentImageUrl } from "../lib/documents";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
 
-function resolveApiOrigin(baseUrl: string) {
-  try {
-    return new URL(baseUrl).origin;
-  } catch {
-    return baseUrl;
-  }
+function resolveProductImage(product: Product) {
+  return resolveDocumentImageUrl({
+    documentId: product.imageDocumentId,
+    legacyUrl: product.imageUrl,
+    fallbackUrl: localProductImages[product.slug] ?? "/assets/product-seeds.jpg"
+  });
 }
 
-function resolveProductImage(product: Product) {
-  if (product.imageUrl) {
-    return product.imageUrl.startsWith("/") ? `${resolveApiOrigin(API_BASE_URL)}${product.imageUrl}` : product.imageUrl;
-  }
+function resolveFallbackImage(product: Product) {
   return localProductImages[product.slug] ?? "/assets/product-seeds.jpg";
 }
 
@@ -109,7 +107,13 @@ export function ShopPage() {
             <article key={product.id} className="product-card">
               <div className="product-media">
                 <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
-                <img src={resolveProductImage(product)} alt={product.name} />
+                <img
+                  src={resolveProductImage(product)}
+                  alt={product.name}
+                  onError={(event) => {
+                    event.currentTarget.src = resolveFallbackImage(product);
+                  }}
+                />
                 <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
                   {product.name.charAt(0)}
                 </div>
