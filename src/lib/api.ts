@@ -122,8 +122,13 @@ export async function requestPortalPasswordResetApi(payload: { identifier: strin
   return response.data;
 }
 
-export async function resetPortalPasswordApi(payload: { token: string; password: string }) {
+export async function resetPortalPasswordWithTokenApi(payload: { token: string; password: string }) {
   const response = await axios.post<{ message: string }>(`${API_BASE_URL}/portal/auth/reset-password`, payload);
+  return response.data;
+}
+
+export async function changePortalPasswordApi(payload: { password: string }) {
+  const response = await portalApiClient.post<{ message: string }>("/portal/auth/change-password", payload);
   return response.data;
 }
 
