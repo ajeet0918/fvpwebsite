@@ -565,6 +565,8 @@ input {
 }
 
 .product-card {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
   border-radius: 22px;
@@ -633,6 +635,9 @@ input {
 }
 
 .product-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 28px;
 }
 
@@ -669,7 +674,8 @@ input {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: auto;
+  padding-top: 20px;
 }
 
 .home-shop-cta {
