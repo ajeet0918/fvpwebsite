@@ -114,9 +114,6 @@ export function ShopPage() {
                     event.currentTarget.src = resolveFallbackImage(product);
                   }}
                 />
-                <div className={`product-icon ${index % 3 === 0 ? "product-icon-green" : index % 3 === 1 ? "product-icon-emerald" : "product-icon-teal"}`}>
-                  {product.name.charAt(0)}
-                </div>
               </div>
               <div className="product-body">
                 <span className="product-category">{product.category}</span>
