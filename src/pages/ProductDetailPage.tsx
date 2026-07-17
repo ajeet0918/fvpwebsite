@@ -46,6 +46,8 @@ export function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
+  const [cartCount, setCartCount] = useState(0);
+  const [cartAdded, setCartAdded] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -74,9 +76,17 @@ export function ProductDetailPage() {
     if (!product) {
       return;
     }
-    addToCart(product.slug, quantity);
-    setMessage("Added to cart.");
-    window.setTimeout(() => setMessage(null), 1800);
+
+    try {
+      const updatedCart = addToCart(product.slug, quantity);
+      const updatedCount = updatedCart.reduce((total, item) => total + item.quantity, 0);
+      setCartCount(updatedCount);
+      setCartAdded(true);
+      setMessage(`${product.name} added to cart.`);
+      window.setTimeout(() => setMessage(null), 2400);
+    } catch (errorValue) {
+      setError(readErrorMessage(errorValue, "Unable to add this product to cart."));
+    }
   }
 
   function changeQuantity(delta: number) {
@@ -171,15 +181,17 @@ export function ProductDetailPage() {
                   <span className="product-detail-unit-hint">{product.priceUnit || "units"}</span>
                 </div>
                 <div className="product-detail-actions">
-                  <button type="button" className="button button-primary" onClick={handleAddToCart}>
-                    Add To Cart
+                  <button type="button" className="button button-primary" onClick={handleAddToCart} aria-live="polite">
+                    {cartAdded ? "Added to Cart" : "Add To Cart"}
                   </button>
                   <Link className="button button-secondary" to={`/order-request?product=${encodeURIComponent(product.slug)}`}>
                     Request Bulk Quote
                   </Link>
-                  <Link className="product-detail-checkout-link" to="/checkout">
-                    Go to checkout
-                  </Link>
+                  {cartCount > 0 ? (
+                    <Link className="product-detail-checkout-link" to="/checkout">
+                      View Cart ({cartCount})
+                    </Link>
+                  ) : null}
                 </div>
               </div>
 

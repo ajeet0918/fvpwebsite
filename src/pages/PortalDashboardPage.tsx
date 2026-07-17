@@ -1,5 +1,5 @@
 ﻿import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   createOrderPaymentSessionApi,
   createCustomerAddressApi,
@@ -15,12 +15,20 @@ import { openCashfreeCheckout } from "../lib/cashfree";
 import { clearCustomerAccessToken, isCustomerAuthenticated } from "../lib/customerAuth";
 import type { CustomerAddress, CustomerOrder, CustomerProfile } from "../types/domain";
 
-function formatCurrency(value: number, currency = "INR") {
+function formatCurrency(value: number | null, currency = "INR") {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value ?? 0);
 }
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function formatStatus(value: string) {
+  return value.toLowerCase().split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
+
+function firstName(value: string) {
+  return value.trim().split(/\s+/)[0] || "there";
 }
 
 export function PortalDashboardPage() {
@@ -198,22 +206,22 @@ export function PortalDashboardPage() {
   return (
     <section className="section page-top">
       <div className="container">
-        <div className="section-heading section-heading-left">
-          <span className="section-badge">My Account</span>
-          <h2>Orders, Profile, and Saved Preferences</h2>
-          <p>Track paid and pending orders, update profile, manage shipping addresses, and keep payment preferences.</p>
-          <div className="hero-actions">
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={() => {
-                clearCustomerAccessToken();
-                navigate("/portal/login", { replace: true });
-              }}
-            >
-              Logout
-            </button>
+        <div className="portal-header">
+          <div className="section-heading section-heading-left">
+            <span className="section-badge">Customer account</span>
+            <h1>Welcome, {profile ? firstName(profile.fullName) : "there"}</h1>
+            <p>Manage your orders, delivery addresses, and account details from one place.</p>
           </div>
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => {
+              clearCustomerAccessToken();
+              navigate("/portal/login", { replace: true });
+            }}
+          >
+            Logout
+          </button>
         </div>
 
         {error ? <p className="form-message form-message-error">{error}</p> : null}
@@ -242,18 +250,44 @@ export function PortalDashboardPage() {
             </div>
 
             <div className="portal-layout-grid">
-              <article className="tracking-panel portal-panel">
-                <h3>Order History</h3>
+              <article className="tracking-panel portal-panel portal-orders-panel">
+                <div className="portal-panel-header">
+                  <div>
+                    <span className="portal-panel-kicker">Order activity</span>
+                    <h2>Your orders</h2>
+                  </div>
+                  <Link className="button button-secondary button-small" to="/shop">Shop Products</Link>
+                </div>
                 {orders.map((order) => (
-                  <div key={order.id} className="tracking-item-row">
-                    <span>
-                      {order.orderNumber}<br />
-                      <small>{formatDate(order.createdAt)} | Status: {order.status}</small>
-                    </span>
-                    <strong>
-                      {order.totalAmount ? formatCurrency(order.totalAmount, order.currency) : "-"}<br />
-                      <small>Payment: {order.paymentStatus}</small>
-                    </strong>
+                  <div key={order.id} className="portal-order-card">
+                    <div className="portal-order-card-header">
+                      <div>
+                        <span className="portal-order-label">Order</span>
+                        <strong>{order.orderNumber}</strong>
+                        <small>{formatDate(order.createdAt)}</small>
+                      </div>
+                      <div className="portal-order-badges">
+                        <span className={`portal-status-badge portal-status-${order.status.toLowerCase()}`}>
+                          {formatStatus(order.status)}
+                        </span>
+                        <span className={`portal-payment-badge portal-payment-${order.paymentStatus.toLowerCase()}`}>
+                          Payment {formatStatus(order.paymentStatus)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="portal-order-summary">
+                      <div><span>Items</span><strong>{order.items.length}</strong></div>
+                      <div><span>Total</span><strong>{formatCurrency(order.totalAmount, order.currency)}</strong></div>
+                      <div><span>Delivery</span><strong>{order.city}, {order.state}</strong></div>
+                    </div>
+                    <div className="portal-order-items">
+                      {order.items.slice(0, 2).map((item) => (
+                        <span key={item.id}>{item.productName} &times; {item.quantity}</span>
+                      ))}
+                      {order.items.length > 2 ? <span>+ {order.items.length - 2} more items</span> : null}
+                    </div>
+                    <div className="portal-order-card-footer">
+                      <span>Created {formatDate(order.createdAt)}</span>
                     {(order.paymentStatus === "PENDING" || order.paymentStatus === "FAILED" || order.paymentStatus === "NOT_INITIATED") ? (
                       <button
                         type="button"
@@ -267,8 +301,15 @@ export function PortalDashboardPage() {
                       <span />
                     )}
                   </div>
+                  </div>
                 ))}
-                {orders.length === 0 ? <p>No orders yet.</p> : null}
+                {orders.length === 0 ? (
+                  <div className="portal-empty-state">
+                    <strong>No orders yet</strong>
+                    <p>Browse the catalog to start your first wholesale order.</p>
+                    <Link className="button button-primary button-small" to="/shop">Browse Catalog</Link>
+                  </div>
+                ) : null}
               </article>
 
               <article className="tracking-panel portal-panel">

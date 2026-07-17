@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { CookieBanner } from "./CookieBanner";
 import { policyLinks } from "../data/policies";
+import { CART_UPDATED_EVENT, getCartItems } from "../lib/cart";
 
 const navLinks = [
   { key: "home", name: "Home", type: "route", path: "/" },
@@ -9,7 +10,7 @@ const navLinks = [
   { key: "contact", name: "Contact", type: "anchor", path: "/#contact", sectionId: "contact" },
   { key: "join", name: "Join With Us", type: "route", path: "/join-us" },
   { key: "products", name: "Shop", type: "route", path: "/shop" },
-  { key: "checkout", name: "Checkout", type: "route", path: "/checkout" },
+  { key: "checkout", name: "Cart", type: "route", path: "/checkout" },
   { key: "portal", name: "My Account", type: "route", path: "/portal/login" }
 ] as const;
 
@@ -19,6 +20,21 @@ export function PublicLayout() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const syncCartCount = () => {
+      setCartCount(getCartItems().reduce((total, item) => total + item.quantity, 0));
+    };
+
+    syncCartCount();
+    window.addEventListener(CART_UPDATED_EVENT, syncCartCount);
+    window.addEventListener("storage", syncCartCount);
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, syncCartCount);
+      window.removeEventListener("storage", syncCartCount);
+    };
+  }, []);
 
   function scrollToSection(sectionId: string, behavior: ScrollBehavior = "smooth") {
     const target = document.getElementById(sectionId);
@@ -153,6 +169,7 @@ export function PublicLayout() {
                       onClick={link.key === "home" ? handleHomeClick : () => setIsMobileMenuOpen(false)}
                     >
                       {link.name}
+                      {link.key === "checkout" && cartCount > 0 ? <span className="cart-count">{cartCount}</span> : null}
                     </NavLink>
                   )
                   : (
@@ -191,6 +208,7 @@ export function PublicLayout() {
                     onClick={link.key === "home" ? handleHomeClick : () => setIsMobileMenuOpen(false)}
                   >
                     {link.name}
+                    {link.key === "checkout" && cartCount > 0 ? <span className="cart-count">{cartCount}</span> : null}
                   </NavLink>
                 )
                 : (

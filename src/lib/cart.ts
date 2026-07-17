@@ -4,6 +4,7 @@ export type CartItem = {
 };
 
 const CART_KEY = "fvp_customer_cart";
+export const CART_UPDATED_EVENT = "fvp-cart-updated";
 
 function safeParse(value: string | null): CartItem[] {
   if (!value) {
@@ -26,20 +27,31 @@ function safeParse(value: string | null): CartItem[] {
 }
 
 export function getCartItems(): CartItem[] {
-  return safeParse(localStorage.getItem(CART_KEY));
+  try {
+    return safeParse(window.localStorage.getItem(CART_KEY));
+  } catch {
+    return [];
+  }
 }
 
 export function setCartItems(items: CartItem[]) {
-  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  window.localStorage.setItem(CART_KEY, JSON.stringify(items));
+  window.dispatchEvent(new Event(CART_UPDATED_EVENT));
 }
 
 export function addToCart(productSlug: string, quantity = 1) {
+  const normalizedProductSlug = productSlug.trim();
+  if (!normalizedProductSlug) {
+    throw new Error("Product could not be added to cart.");
+  }
+
+  const normalizedQuantity = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 1;
   const current = getCartItems();
-  const existing = current.find((item) => item.productSlug === productSlug);
+  const existing = current.find((item) => item.productSlug === normalizedProductSlug);
   if (existing) {
-    existing.quantity += Math.max(1, Math.floor(quantity));
+    existing.quantity += normalizedQuantity;
   } else {
-    current.push({ productSlug, quantity: Math.max(1, Math.floor(quantity)) });
+    current.push({ productSlug: normalizedProductSlug, quantity: normalizedQuantity });
   }
   setCartItems(current);
   return current;
@@ -59,5 +71,6 @@ export function removeFromCart(productSlug: string) {
 }
 
 export function clearCart() {
-  localStorage.removeItem(CART_KEY);
+  window.localStorage.removeItem(CART_KEY);
+  window.dispatchEvent(new Event(CART_UPDATED_EVENT));
 }

@@ -64,9 +64,13 @@ export function ShopPage() {
   }
 
   function handleAddToCart(slug: string) {
-    addToCart(slug, 1);
-    setCartMessage("Product added to cart.");
-    window.setTimeout(() => setCartMessage(null), 1800);
+    try {
+      addToCart(slug, 1);
+      setCartMessage("Product added to cart.");
+      window.setTimeout(() => setCartMessage(null), 1800);
+    } catch (errorValue) {
+      setCartMessage(readErrorMessage(errorValue, "Unable to add this product to cart."));
+    }
   }
 
   return (
