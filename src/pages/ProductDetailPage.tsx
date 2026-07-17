@@ -2,27 +2,41 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchProductBySlugApi, readErrorMessage } from "../lib/api";
 import { addToCart } from "../lib/cart";
-import { downloadPublicDocument, resolveDocumentImageUrl } from "../lib/documents";
+import { resolveDocumentImageUrl } from "../lib/documents";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
+
+const DEFAULT_PRODUCT_IMAGE = "/assets/product-seeds.jpg";
+const WHATSAPP_NUMBER = "919650035272";
 
 function resolveProductImage(product: Product) {
   return resolveDocumentImageUrl({
     documentId: product.imageDocumentId,
     legacyUrl: product.imageUrl,
-    fallbackUrl: localProductImages[product.slug] ?? "/assets/product-seeds.jpg"
+    fallbackUrl: localProductImages[product.slug] ?? DEFAULT_PRODUCT_IMAGE
   });
 }
 
 function resolveFallbackImage(product: Product) {
-  return localProductImages[product.slug] ?? "/assets/product-seeds.jpg";
+  return localProductImages[product.slug] ?? DEFAULT_PRODUCT_IMAGE;
 }
 
 function formatPrice(value: number | null, unit: string) {
-  if (value === null || value === undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
     return "Price on request";
   }
-  return `INR ${value.toFixed(2)} / ${unit}`;
+
+  const formattedValue = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2
+  }).format(value);
+  return `${formattedValue} / ${unit || "unit"}`;
+}
+
+function buildWhatsAppUrl(product: Product) {
+  const message = `Hello FVP Purepick, I need a bulk quote for ${product.name}${product.sku ? ` (SKU: ${product.sku})` : ""}.`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 export function ProductDetailPage() {
@@ -32,7 +46,6 @@ export function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
-  const [downloadingImage, setDownloadingImage] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -66,34 +79,27 @@ export function ProductDetailPage() {
     window.setTimeout(() => setMessage(null), 1800);
   }
 
-  async function handleDownloadImage() {
-    if (!product?.imageDocumentId) {
-      return;
-    }
+  function changeQuantity(delta: number) {
+    setQuantity((current) => Math.max(1, current + delta));
+  }
 
-    try {
-      setDownloadingImage(true);
-      setError(null);
-      await downloadPublicDocument(product.imageDocumentId, product.slug);
-    } catch (errorValue) {
-      setError(readErrorMessage(errorValue, "Unable to download product image."));
-    } finally {
-      setDownloadingImage(false);
-    }
+  function handleQuantityChange(value: string) {
+    const parsedValue = Number(value);
+    setQuantity(Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : 1);
   }
 
   return (
     <section className="section page-top">
       <div className="container">
-        <div className="section-heading section-heading-left">
-          <span className="section-badge">Product Details</span>
-          <h2>{product?.name ?? "Catalog Product"}</h2>
-          <p>Review product information and continue to order flow.</p>
-        </div>
+        <nav className="product-detail-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/shop">Shop</Link>
+          <span aria-hidden="true">/</span>
+          <span>{product?.name ?? "Product details"}</span>
+        </nav>
 
-        {loading ? <p>Loading product details...</p> : null}
-        {error ? <div className="banner-error">{error}</div> : null}
-        {message ? <p className="form-message">{message}</p> : null}
+        {loading ? <p className="product-detail-state">Loading product details...</p> : null}
+        {error ? <div className="banner-error" role="alert">{error}</div> : null}
+        {message ? <p className="form-message" role="status">{message}</p> : null}
 
         {product ? (
           <article className="product-detail-card">
@@ -101,47 +107,90 @@ export function ProductDetailPage() {
               <img
                 src={resolveProductImage(product)}
                 alt={product.name}
+                loading="eager"
+                decoding="async"
                 onError={(event) => {
+                  if (event.currentTarget.dataset.fallbackApplied === "true") {
+                    return;
+                  }
+                  event.currentTarget.dataset.fallbackApplied = "true";
                   event.currentTarget.src = resolveFallbackImage(product);
                 }}
               />
             </div>
             <div className="product-detail-content">
-              <span className="product-category">{product.category}</span>
-              <h3>{product.name}</h3>
-              <p>{product.longDescription || product.shortDescription}</p>
-              <div className="product-detail-meta">
-                <div><strong>Price</strong><span>{formatPrice(product.price, product.priceUnit)}</span></div>
-                <div><strong>Unit</strong><span>{product.priceUnit || "-"}</span></div>
-                <div><strong>MOQ</strong><span>{product.moq || "-"}</span></div>
+              <div className="product-detail-heading">
+                <div className="product-detail-label-row">
+                  <span className="product-category">{product.category}</span>
+                  {product.sku ? <span className="product-detail-sku">SKU {product.sku}</span> : null}
+                </div>
+                <h1>{product.name}</h1>
+                {product.shortDescription ? <p className="product-detail-lead">{product.shortDescription}</p> : null}
               </div>
-              <div className="shop-card-actions">
-                <input
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(event) => setQuantity(Number(event.target.value) > 0 ? Number(event.target.value) : 1)}
-                  className="product-qty-input"
-                />
-                <button type="button" className="button button-primary" onClick={handleAddToCart}>
-                  Add To Cart
-                </button>
-                {product.imageDocumentId ? (
-                  <button
-                    type="button"
-                    className="button button-secondary"
-                    onClick={() => void handleDownloadImage()}
-                    disabled={downloadingImage}
-                  >
-                    {downloadingImage ? "Downloading..." : "Download Image"}
+
+              {product.longDescription && product.longDescription !== product.shortDescription ? (
+                <div className="product-detail-description">
+                  <h2>Product overview</h2>
+                  <p>{product.longDescription}</p>
+                </div>
+              ) : null}
+
+              <dl className="product-detail-meta">
+                <div>
+                  <dt>Price</dt>
+                  <dd>{formatPrice(product.price, product.priceUnit)}</dd>
+                </div>
+                <div>
+                  <dt>Selling unit</dt>
+                  <dd>{product.priceUnit || "Available on request"}</dd>
+                </div>
+                <div>
+                  <dt>Minimum order</dt>
+                  <dd>{product.moq || "Confirm with quote"}</dd>
+                </div>
+              </dl>
+
+              <div className="product-detail-purchase">
+                <div className="product-detail-purchase-heading">
+                  <h2>Order quantity</h2>
+                  <span>Wholesale quantity is confirmed during order review.</span>
+                </div>
+                <div className="product-detail-purchase-row">
+                  <div className="quantity-control" aria-label="Order quantity">
+                    <button type="button" onClick={() => changeQuantity(-1)} aria-label="Decrease quantity">-</button>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={quantity}
+                      onChange={(event) => handleQuantityChange(event.target.value)}
+                      aria-label="Quantity"
+                    />
+                    <button type="button" onClick={() => changeQuantity(1)} aria-label="Increase quantity">+</button>
+                  </div>
+                  <span className="product-detail-unit-hint">{product.priceUnit || "units"}</span>
+                </div>
+                <div className="product-detail-actions">
+                  <button type="button" className="button button-primary" onClick={handleAddToCart}>
+                    Add To Cart
                   </button>
-                ) : null}
-                <Link className="button button-primary" to="/checkout">
-                  Checkout
-                </Link>
-                <Link className="button button-secondary" to="/shop">
-                  Back To Shop
-                </Link>
+                  <Link className="button button-secondary" to={`/order-request?product=${encodeURIComponent(product.slug)}`}>
+                    Request Bulk Quote
+                  </Link>
+                  <Link className="product-detail-checkout-link" to="/checkout">
+                    Go to checkout
+                  </Link>
+                </div>
+              </div>
+
+              <div className="product-detail-support">
+                <div>
+                  <strong>Need a confirmed quote?</strong>
+                  <span>Share your quantity and delivery requirement with our team.</span>
+                </div>
+                <a href={buildWhatsAppUrl(product)} target="_blank" rel="noreferrer" className="product-detail-whatsapp-link">
+                  WhatsApp for bulk inquiry
+                </a>
               </div>
             </div>
           </article>
