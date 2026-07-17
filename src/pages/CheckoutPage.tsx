@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import {
   createCustomerAddressApi,
   createDirectOrderApi,
@@ -12,6 +12,11 @@ import { openCashfreeCheckout } from "../lib/cashfree";
 import { isCustomerAuthenticated } from "../lib/customerAuth";
 import type { CustomerAddress, Product } from "../types/domain";
 
+type OrderCreatedState = {
+  orderNumber: string;
+  message: string;
+};
+
 function formatCurrency(value: number | null, currency = "INR") {
   if (value === null || value === undefined) {
     return "Price on request";
@@ -20,7 +25,6 @@ function formatCurrency(value: number | null, currency = "INR") {
 }
 
 export function CheckoutPage() {
-  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
@@ -30,6 +34,7 @@ export function CheckoutPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [cartItems, setCartItemsState] = useState(() => getCartItems());
   const [policyAccepted, setPolicyAccepted] = useState(false);
+  const [orderCreated, setOrderCreated] = useState<OrderCreatedState | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressForm, setAddressForm] = useState({
     label: "",
@@ -106,6 +111,7 @@ export function CheckoutPage() {
 
     setSavingOrder(true);
     setMessage(null);
+    setOrderCreated(null);
     try {
       const result = await createDirectOrderApi({
         addressId: selectedAddressId,
@@ -129,8 +135,10 @@ export function CheckoutPage() {
         await openCashfreeCheckout(result.paymentSessionId);
         return;
       }
-      setMessage(result.message || "Order created. Payment session is ready in your account.");
-      navigate("/portal", { replace: true });
+      setOrderCreated({
+        orderNumber: result.orderNumber,
+        message: result.message || "Your order was created and is available in your account."
+      });
     } catch (error) {
       setMessage(readErrorMessage(error, "Unable to place order."));
     } finally {
@@ -179,7 +187,20 @@ export function CheckoutPage() {
         {message ? <p className="form-message form-message-error">{message}</p> : null}
         {loading ? <p>Loading checkout...</p> : null}
 
-        {!loading && (
+        {orderCreated ? (
+          <article className="checkout-success-panel">
+            <span className="checkout-success-icon" aria-hidden="true">&#10003;</span>
+            <div>
+              <span className="section-badge">Order received</span>
+              <h2>Order {orderCreated.orderNumber} was created</h2>
+              <p>{orderCreated.message}</p>
+              <div className="checkout-success-actions">
+                <Link className="button button-primary" to="/portal">View My Orders</Link>
+                <Link className="button button-secondary" to="/shop">Continue Shopping</Link>
+              </div>
+            </div>
+          </article>
+        ) : !loading && (
           <div className="checkout-grid">
             <article className="tracking-panel">
               <h3>Cart Items</h3>

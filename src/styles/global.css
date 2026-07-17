@@ -1505,8 +1505,211 @@ input {
   margin-top: 0;
 }
 
+.portal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.portal-header .section-heading {
+  margin-bottom: 0;
+}
+
+.portal-header h1 {
+  margin: 8px 0 10px;
+  color: var(--slate-900);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+}
+
 .portal-panel {
   margin-top: 20px;
+}
+
+.portal-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.portal-panel-header h2 {
+  margin: 2px 0 0;
+  color: var(--slate-900);
+  font-size: 1.35rem;
+}
+
+.portal-panel-kicker,
+.portal-order-label {
+  display: block;
+  color: var(--green-700);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.portal-order-card {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--slate-200);
+  padding: 18px 0;
+}
+
+.portal-order-card-header,
+.portal-order-card-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.portal-order-card-header > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.portal-order-card-header strong {
+  color: var(--slate-900);
+  font-size: 1.05rem;
+}
+
+.portal-order-card-header small,
+.portal-order-card-footer > span {
+  color: var(--slate-500);
+  font-size: 0.84rem;
+}
+
+.portal-order-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.portal-status-badge,
+.portal-payment-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.portal-status-badge {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.portal-payment-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.portal-payment-paid {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.portal-payment-failed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.portal-order-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portal-order-summary > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.portal-order-summary span {
+  color: var(--slate-500);
+  font-size: 0.78rem;
+}
+
+.portal-order-summary strong {
+  color: var(--slate-900);
+  overflow-wrap: anywhere;
+}
+
+.portal-order-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.portal-order-items span {
+  border: 1px solid var(--slate-200);
+  border-radius: 8px;
+  padding: 5px 8px;
+  color: var(--slate-600);
+  font-size: 0.82rem;
+}
+
+.portal-empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  border-top: 1px solid var(--slate-200);
+  padding-top: 24px;
+}
+
+.portal-empty-state p {
+  margin: 0 0 4px;
+  color: var(--slate-600);
+}
+
+.checkout-success-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  border: 1px solid var(--green-200);
+  border-radius: 18px;
+  background: var(--green-50);
+  padding: 26px;
+}
+
+.checkout-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--green-600);
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.checkout-success-panel h2 {
+  margin: 10px 0 8px;
+  color: var(--slate-900);
+}
+
+.checkout-success-panel p {
+  margin: 0;
+  color: var(--slate-600);
+}
+
+.checkout-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .invoice-sheet {
@@ -2677,6 +2880,30 @@ input {
 
   .hero-panel-card img {
     height: 220px;
+  }
+
+  .portal-header,
+  .portal-panel-header,
+  .portal-order-card-header,
+  .portal-order-card-footer,
+  .checkout-success-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portal-header > .button,
+  .portal-panel-header > .button,
+  .checkout-success-actions .button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .portal-order-badges {
+    justify-content: flex-start;
+  }
+
+  .portal-order-summary {
+    grid-template-columns: 1fr;
   }
 
   .product-detail-card {
