@@ -10,6 +10,8 @@ import {
 import { clearCart, getCartItems, removeFromCart, updateCartQuantity } from "../lib/cart";
 import { openCashfreeCheckout } from "../lib/cashfree";
 import { isCustomerAuthenticated } from "../lib/customerAuth";
+import { resolveDocumentImageUrl } from "../lib/documents";
+import { localProductImages } from "../data/productImages";
 import type { CustomerAddress, Product } from "../types/domain";
 
 type OrderCreatedState = {
@@ -22,6 +24,18 @@ function formatCurrency(value: number | null, currency = "INR") {
     return "Price on request";
   }
   return new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value);
+}
+
+function resolveProductImage(product: Product) {
+  return resolveDocumentImageUrl({
+    documentId: product.imageDocumentId,
+    legacyUrl: product.imageUrl,
+    fallbackUrl: localProductImages[product.slug] ?? "/assets/product-seeds.jpg"
+  });
+}
+
+function resolveFallbackImage(product: Product) {
+  return localProductImages[product.slug] ?? "/assets/product-seeds.jpg";
 }
 
 export function CheckoutPage() {
@@ -68,6 +82,14 @@ export function CheckoutPage() {
   const grandTotal = useMemo(() => {
     return cartLines.reduce((total, line) => total + (line.lineTotal ?? 0), 0);
   }, [cartLines]);
+
+  const totalQuantity = useMemo(() => {
+    return cartLines.reduce((total, line) => total + line.quantity, 0);
+  }, [cartLines]);
+
+  const selectedAddress = useMemo(() => {
+    return addresses.find((address) => address.id === selectedAddressId) ?? null;
+  }, [addresses, selectedAddressId]);
 
   useEffect(() => {
     async function loadData() {
@@ -176,16 +198,21 @@ export function CheckoutPage() {
   }
 
   return (
-    <section className="section page-top">
+    <section className="section page-top checkout-page">
       <div className="container">
-        <div className="section-heading section-heading-left">
+        <div className="section-heading section-heading-left checkout-page-heading">
           <span className="section-badge">Checkout</span>
-          <h2>Direct Order and Payment</h2>
-          <p>Review cart, select shipping address, and continue to secure Cashfree payment.</p>
+          <h1>Review your wholesale order</h1>
+          <p>Confirm quantities and delivery details before continuing to secure payment.</p>
+          <div className="checkout-steps" aria-label="Checkout progress">
+            <span className="checkout-step checkout-step-active"><strong>1</strong> Review cart</span>
+            <span className="checkout-step"><strong>2</strong> Delivery details</span>
+            <span className="checkout-step"><strong>3</strong> Payment</span>
+          </div>
         </div>
 
         {message ? <p className="form-message form-message-error">{message}</p> : null}
-        {loading ? <p>Loading checkout...</p> : null}
+        {loading ? <div className="checkout-loading-state">Loading your cart and delivery details...</div> : null}
 
         {orderCreated ? (
           <article className="checkout-success-panel">
@@ -202,22 +229,51 @@ export function CheckoutPage() {
           </article>
         ) : !loading && (
           <div className="checkout-grid">
-            <article className="tracking-panel">
-              <h3>Cart Items</h3>
+            <article className="tracking-panel checkout-cart-panel">
+              <div className="checkout-panel-heading">
+                <div>
+                  <span className="checkout-panel-kicker">Order review</span>
+                  <h2>Cart items</h2>
+                </div>
+                <span className="checkout-item-count">{totalQuantity} {totalQuantity === 1 ? "item" : "items"}</span>
+              </div>
               {cartLines.map((line) => (
                 <div key={line.product.slug} className="checkout-line-item">
+                  <div className="checkout-line-image">
+                    <img
+                      src={resolveProductImage(line.product)}
+                      alt={line.product.name}
+                      onError={(event) => {
+                        event.currentTarget.src = resolveFallbackImage(line.product);
+                      }}
+                    />
+                  </div>
                   <div className="checkout-line-product">
+                    <span>{line.product.category}</span>
                     <strong>{line.product.name}</strong>
-                    <p>{formatCurrency(line.product.price)} / {line.product.priceUnit}</p>
+                    <p>{formatCurrency(line.product.price)} per {line.product.priceUnit}</p>
+                    {line.product.moq ? <small>MOQ: {line.product.moq}</small> : null}
                   </div>
                   <div className="checkout-line-total">
                     <span>Item total</span>
                     <strong>{formatCurrency(line.lineTotal)}</strong>
                   </div>
                   <div className="checkout-line-actions">
-                    <label className="checkout-quantity-field">
-                      <span>Quantity</span>
+                    <div className="checkout-quantity-field">
+                      <span id={`quantity-label-${line.product.slug}`}>Quantity</span>
+                      <div className="checkout-quantity-control">
+                        <button
+                          type="button"
+                          aria-label={`Decrease quantity for ${line.product.name}`}
+                          disabled={line.quantity <= 1}
+                          onClick={() => {
+                            setCartItemsState(updateCartQuantity(line.product.slug, line.quantity - 1));
+                          }}
+                        >
+                          &minus;
+                        </button>
                       <input
+                        aria-labelledby={`quantity-label-${line.product.slug}`}
                         aria-label={`Quantity for ${line.product.name}`}
                         type="number"
                         min={1}
@@ -228,10 +284,19 @@ export function CheckoutPage() {
                           setCartItemsState(next);
                         }}
                       />
-                    </label>
-                    <button type="button" className="button button-secondary button-small" onClick={() => {
-                      const next = removeFromCart(line.product.slug);
-                      setCartItemsState(next);
+                        <button
+                          type="button"
+                          aria-label={`Increase quantity for ${line.product.name}`}
+                          onClick={() => {
+                            setCartItemsState(updateCartQuantity(line.product.slug, line.quantity + 1));
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <button type="button" className="checkout-remove-button" onClick={() => {
+                      setCartItemsState(removeFromCart(line.product.slug));
                     }}>
                       Remove
                     </button>
@@ -239,20 +304,33 @@ export function CheckoutPage() {
                 </div>
               ))}
               {cartLines.length === 0 ? (
-                <p>
-                  Cart is empty. <Link to="/shop">Browse products</Link>
-                </p>
+                <div className="checkout-empty-state">
+                  <strong>Your cart is empty</strong>
+                  <p>Add products from the catalog to prepare a wholesale order.</p>
+                  <Link className="button button-primary button-small" to="/shop">Browse Products</Link>
+                </div>
               ) : null}
-              <div className="checkout-total-row">
-                <span>Total</span>
-                <strong>{formatCurrency(grandTotal)}</strong>
-              </div>
+              {cartLines.length > 0 ? (
+                <div className="checkout-cart-footer">
+                  <Link to="/shop">Continue shopping</Link>
+                  <div className="checkout-total-row">
+                    <span>Products subtotal</span>
+                    <strong>{formatCurrency(grandTotal)}</strong>
+                  </div>
+                </div>
+              ) : null}
             </article>
 
-            <form className="order-form" onSubmit={handlePlaceOrder}>
-              <h3>Shipping and Payment</h3>
-              <label>
-                Select Address
+            <form className="order-form checkout-order-panel" onSubmit={handlePlaceOrder}>
+              <div className="checkout-panel-heading">
+                <div>
+                  <span className="checkout-panel-kicker">Delivery</span>
+                  <h2>Shipping and payment</h2>
+                </div>
+              </div>
+
+              <label className="checkout-field-label">
+                Delivery address
                 <select
                   value={selectedAddressId ?? ""}
                   onChange={(event) => setSelectedAddressId(event.target.value ? Number(event.target.value) : null)}
@@ -266,39 +344,49 @@ export function CheckoutPage() {
                   ))}
                 </select>
               </label>
+              {selectedAddress ? (
+                <address className="checkout-selected-address">
+                  <strong>{selectedAddress.recipientName}</strong>
+                  <span>{selectedAddress.phone}</span>
+                  <span>{selectedAddress.line1}{selectedAddress.line2 ? `, ${selectedAddress.line2}` : ""}</span>
+                  <span>{selectedAddress.city}, {selectedAddress.state} {selectedAddress.postalCode}</span>
+                </address>
+              ) : null}
               <button
                 type="button"
-                className="button button-secondary button-small"
+                className="checkout-address-toggle"
                 onClick={() => setShowAddressForm((open) => !open)}
               >
-                {showAddressForm ? "Hide Address Form" : "Add New Address"}
+                {showAddressForm ? "Cancel new address" : "+ Add another address"}
               </button>
 
               {showAddressForm ? (
-                <div className="form-grid two-up">
-                  <label>Label<input value={addressForm.label} onChange={(event) => setAddressForm((p) => ({ ...p, label: event.target.value }))} required /></label>
-                  <label>Recipient<input value={addressForm.recipientName} onChange={(event) => setAddressForm((p) => ({ ...p, recipientName: event.target.value }))} required /></label>
-                  <label>Phone<input value={addressForm.phone} onChange={(event) => setAddressForm((p) => ({ ...p, phone: event.target.value }))} required /></label>
-                  <label>Line 1<input value={addressForm.line1} onChange={(event) => setAddressForm((p) => ({ ...p, line1: event.target.value }))} required /></label>
-                  <label>Line 2<input value={addressForm.line2} onChange={(event) => setAddressForm((p) => ({ ...p, line2: event.target.value }))} /></label>
-                  <label>City<input value={addressForm.city} onChange={(event) => setAddressForm((p) => ({ ...p, city: event.target.value }))} required /></label>
-                  <label>State<input value={addressForm.state} onChange={(event) => setAddressForm((p) => ({ ...p, state: event.target.value }))} required /></label>
-                  <label>Postal Code<input value={addressForm.postalCode} onChange={(event) => setAddressForm((p) => ({ ...p, postalCode: event.target.value }))} required /></label>
-                  <label>Country<input value={addressForm.country} onChange={(event) => setAddressForm((p) => ({ ...p, country: event.target.value }))} required /></label>
-                </div>
-              ) : null}
-
-              {showAddressForm ? (
-                <div className="form-actions">
-                  <button type="button" className="button button-secondary" onClick={() => void createAddress()}>
+                <div className="checkout-address-form">
+                  <div className="form-grid two-up">
+                    <label>Address label<input value={addressForm.label} onChange={(event) => setAddressForm((p) => ({ ...p, label: event.target.value }))} placeholder="Home, office, warehouse" required /></label>
+                    <label>Recipient name<input value={addressForm.recipientName} onChange={(event) => setAddressForm((p) => ({ ...p, recipientName: event.target.value }))} autoComplete="name" required /></label>
+                    <label>Phone<input value={addressForm.phone} onChange={(event) => setAddressForm((p) => ({ ...p, phone: event.target.value }))} autoComplete="tel" inputMode="tel" required /></label>
+                    <label>Address line 1<input value={addressForm.line1} onChange={(event) => setAddressForm((p) => ({ ...p, line1: event.target.value }))} autoComplete="address-line1" required /></label>
+                    <label>Address line 2<input value={addressForm.line2} onChange={(event) => setAddressForm((p) => ({ ...p, line2: event.target.value }))} autoComplete="address-line2" /></label>
+                    <label>City<input value={addressForm.city} onChange={(event) => setAddressForm((p) => ({ ...p, city: event.target.value }))} autoComplete="address-level2" required /></label>
+                    <label>State<input value={addressForm.state} onChange={(event) => setAddressForm((p) => ({ ...p, state: event.target.value }))} autoComplete="address-level1" required /></label>
+                    <label>Postal code<input value={addressForm.postalCode} onChange={(event) => setAddressForm((p) => ({ ...p, postalCode: event.target.value }))} autoComplete="postal-code" inputMode="numeric" required /></label>
+                    <label>Country<input value={addressForm.country} onChange={(event) => setAddressForm((p) => ({ ...p, country: event.target.value }))} autoComplete="country-name" required /></label>
+                  </div>
+                  <button type="button" className="button button-secondary button-small" onClick={() => void createAddress()}>
                     Save Address
                   </button>
                 </div>
               ) : null}
 
-              <label>
-                Order Notes
-                <textarea rows={3} value={customerNotes} onChange={(event) => setCustomerNotes(event.target.value)} />
+              <label className="checkout-field-label">
+                Order notes <span>Optional</span>
+                <textarea
+                  rows={3}
+                  value={customerNotes}
+                  onChange={(event) => setCustomerNotes(event.target.value)}
+                  placeholder="Add delivery instructions or product requirements"
+                />
               </label>
 
               <div className="policy-acknowledgement">
@@ -310,7 +398,7 @@ export function CheckoutPage() {
                     required
                   />
                   <span>
-                    By placing an order, you agree to our{" "}
+                    I agree to the{" "}
                     <Link to="/policies#terms">Terms</Link>,{" "}
                     <Link to="/policies#shipping-delivery">Shipping & Delivery</Link>,{" "}
                     <Link to="/policies#cancellation">Cancellation</Link>, and{" "}
@@ -319,9 +407,14 @@ export function CheckoutPage() {
                 </label>
               </div>
 
-              <div className="form-actions">
+              <div className="checkout-payment-summary">
+                <div>
+                  <span>Estimated total</span>
+                  <strong>{formatCurrency(grandTotal)}</strong>
+                </div>
+                <p>Payment is completed securely through Cashfree after your order is created.</p>
                 <button type="submit" className="button button-primary" disabled={savingOrder || cartLines.length === 0}>
-                  {savingOrder ? "Creating order..." : "Place Order & Pay"}
+                  {savingOrder ? "Creating order..." : "Place Order & Continue to Payment"}
                 </button>
               </div>
             </form>
