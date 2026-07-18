@@ -21,7 +21,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/join-us" element={<JoinUsPage />} />
         <Route path="/portal/login" element={<PortalLoginPage />} />
-        <Route path="/portal" element={<PortalDashboardPage />} />
+        <Route path="/portal/*" element={<PortalDashboardPage />} />
         <Route path="/partner/login" element={<PartnerLoginPage />} />
         <Route path="/partner/activate" element={<PartnerActivatePage />} />
         <Route path="/partner/reset-password" element={<PartnerResetPasswordPage />} />

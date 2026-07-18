@@ -206,21 +206,29 @@ export function CheckoutPage() {
               <h3>Cart Items</h3>
               {cartLines.map((line) => (
                 <div key={line.product.slug} className="checkout-line-item">
-                  <div>
+                  <div className="checkout-line-product">
                     <strong>{line.product.name}</strong>
                     <p>{formatCurrency(line.product.price)} / {line.product.priceUnit}</p>
                   </div>
+                  <div className="checkout-line-total">
+                    <span>Item total</span>
+                    <strong>{formatCurrency(line.lineTotal)}</strong>
+                  </div>
                   <div className="checkout-line-actions">
-                    <input
-                      type="number"
-                      min={1}
-                      value={line.quantity}
-                      onChange={(event) => {
-                        const qty = Number(event.target.value);
-                        const next = updateCartQuantity(line.product.slug, Number.isFinite(qty) && qty > 0 ? qty : 1);
-                        setCartItemsState(next);
-                      }}
-                    />
+                    <label className="checkout-quantity-field">
+                      <span>Quantity</span>
+                      <input
+                        aria-label={`Quantity for ${line.product.name}`}
+                        type="number"
+                        min={1}
+                        value={line.quantity}
+                        onChange={(event) => {
+                          const qty = Number(event.target.value);
+                          const next = updateCartQuantity(line.product.slug, Number.isFinite(qty) && qty > 0 ? qty : 1);
+                          setCartItemsState(next);
+                        }}
+                      />
+                    </label>
                     <button type="button" className="button button-secondary button-small" onClick={() => {
                       const next = removeFromCart(line.product.slug);
                       setCartItemsState(next);
@@ -228,7 +236,6 @@ export function CheckoutPage() {
                       Remove
                     </button>
                   </div>
-                  <strong>{formatCurrency(line.lineTotal)}</strong>
                 </div>
               ))}
               {cartLines.length === 0 ? (
