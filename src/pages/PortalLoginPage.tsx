@@ -45,7 +45,7 @@ export function PortalLoginPage() {
 
   const redirectPath = useMemo(() => {
     const next = searchParams.get("next");
-    if (next && next.startsWith("/")) {
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
       return next;
     }
     return "/portal";
@@ -164,40 +164,59 @@ export function PortalLoginPage() {
   return (
     <section className="auth-page auth-page-customer">
       <div className="container auth-container">
-        <div className="auth-shell">
-          <div className="auth-brand">
-            <Link className="auth-logo" to="/" aria-label="FVP Purepick home">
-              <img src="/assets/logofvp.jpeg" alt="" />
+        <div className="auth-shell auth-customer-shell">
+          <aside className="auth-customer-context">
+            <Link className="auth-brand auth-customer-brand" to="/" aria-label="FVP Purepick home">
+              <span className="auth-logo"><img src="/assets/logofvp.jpeg" alt="" /></span>
+              <span>FVP Purepick</span>
             </Link>
-            <span>FVP Purepick</span>
-          </div>
+            <span className="auth-context-kicker">Wholesale buyer portal</span>
+            <h2>Manage orders and delivery details in one secure account.</h2>
+            <p>Use your customer account to review purchases, retry pending payments, and maintain delivery addresses.</p>
+            <div className="auth-customer-support">
+              <strong>Need help accessing your account?</strong>
+              <a href="mailto:contact@fvpurepick.com">contact@fvpurepick.com</a>
+            </div>
+          </aside>
 
           <div className="auth-surface auth-card">
             <div className="auth-heading">
               <span className="auth-kicker">Customer account</span>
-              <h1>{mode === "login" ? "Welcome back" : "Create your account"}</h1>
-              <p>{mode === "login" ? "Access your orders, invoices, and checkout details." : "Create one secure account for orders and checkout."}</p>
+              <h1>{mode === "login" ? "Sign in" : "Create your account"}</h1>
+              <p>{mode === "login" ? "Enter your account details to continue." : "Create one account for wholesale orders and checkout."}</p>
             </div>
 
             <div className="auth-mode-toggle" role="tablist" aria-label="Auth mode">
               <button
                 type="button"
+                role="tab"
+                aria-selected={mode === "login"}
+                aria-controls="customer-login-panel"
                 className={mode === "login" ? "auth-toggle-button auth-toggle-active" : "auth-toggle-button"}
-                onClick={() => setMode("login")}
+                onClick={() => {
+                  setMode("login");
+                  setMessage(null);
+                }}
               >
-                Login
+                Sign In
               </button>
               <button
                 type="button"
+                role="tab"
+                aria-selected={mode === "signup"}
+                aria-controls="customer-signup-panel"
                 className={mode === "signup" ? "auth-toggle-button auth-toggle-active" : "auth-toggle-button"}
-                onClick={() => setMode("signup")}
+                onClick={() => {
+                  setMode("signup");
+                  setMessage(null);
+                }}
               >
-                Signup
+                Create Account
               </button>
             </div>
 
             {mode === "login" ? (
-              <form className="auth-form" onSubmit={handleLoginSubmit}>
+              <form id="customer-login-panel" className="auth-form" role="tabpanel" onSubmit={handleLoginSubmit}>
                 <div className="auth-field-stack">
                   <label htmlFor="customer-login-email">
                     Email
@@ -208,6 +227,7 @@ export function PortalLoginPage() {
                       onChange={(event) => setLoginEmail(event.target.value)}
                       autoComplete="email"
                       placeholder="name@company.com"
+                      autoFocus
                       required
                     />
                   </label>
@@ -243,11 +263,11 @@ export function PortalLoginPage() {
                   </label>
                 </div>
                 <button type="submit" className="button button-primary auth-submit" disabled={loading}>
-                  {loading ? "Signing in..." : "Login"}
+                  {loading ? "Signing in..." : "Sign In"}
                 </button>
               </form>
             ) : (
-              <form className="auth-form" onSubmit={handleSignupSubmit}>
+              <form id="customer-signup-panel" className="auth-form" role="tabpanel" onSubmit={handleSignupSubmit}>
                 <div className="form-grid two-up auth-signup-grid">
                   <label htmlFor="customer-signup-name">
                     Full name
@@ -321,6 +341,7 @@ export function PortalLoginPage() {
                         )}
                       </button>
                     </div>
+                    <small className="auth-field-help">Use at least 8 characters.</small>
                   </label>
                 </div>
                 <button type="submit" className="button button-primary auth-submit" disabled={loading}>

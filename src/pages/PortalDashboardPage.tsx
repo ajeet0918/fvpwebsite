@@ -1,5 +1,5 @@
-﻿import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   createOrderPaymentSessionApi,
   createCustomerAddressApi,
@@ -11,70 +11,73 @@ import {
   updateCustomerPaymentPreferenceApi,
   updateCustomerProfileApi
 } from "../lib/api";
+import { CustomerAddressBook, type CustomerAddressDraft } from "../components/customer/CustomerAddressBook";
+import { CustomerOrderCard } from "../components/customer/CustomerOrderCard";
+import {
+  CustomerProfileSettings,
+  type CustomerPaymentDraft,
+  type CustomerProfileDraft
+} from "../components/customer/CustomerProfileSettings";
 import { openCashfreeCheckout } from "../lib/cashfree";
 import { clearCustomerAccessToken, isCustomerAuthenticated } from "../lib/customerAuth";
 import type { CustomerAddress, CustomerOrder, CustomerProfile } from "../types/domain";
 
-function formatCurrency(value: number | null, currency = "INR") {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value ?? 0);
-}
+type PortalView = "overview" | "orders" | "addresses" | "profile";
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function formatStatus(value: string) {
-  return value.toLowerCase().split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-}
+const PORTAL_NAV_ITEMS: Array<{ view: PortalView; label: string; path: string }> = [
+  { view: "overview", label: "Overview", path: "/portal" },
+  { view: "orders", label: "Orders", path: "/portal/orders" },
+  { view: "addresses", label: "Addresses", path: "/portal/addresses" },
+  { view: "profile", label: "Profile", path: "/portal/profile" }
+];
 
 function firstName(value: string) {
   return value.trim().split(/\s+/)[0] || "there";
 }
 
+function getPortalView(pathname: string): PortalView {
+  const segment = pathname.split("/").filter(Boolean)[1];
+  if (segment === "orders" || segment === "addresses" || segment === "profile") {
+    return segment;
+  }
+  return "overview";
+}
+
+function getInitials(value: string) {
+  return value
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("") || "CU";
+}
+
 export function PortalDashboardPage() {
+  const location = useLocation();
   const navigate = useNavigate();
+  const activeView = getPortalView(location.pathname);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPreference, setSavingPreference] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [retryingOrderId, setRetryingOrderId] = useState<number | null>(null);
 
-  const [addressForm, setAddressForm] = useState({
-    label: "",
-    recipientName: "",
-    phone: "",
-    line1: "",
-    line2: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "India",
-    isDefault: true
-  });
-
-  const [profileDraft, setProfileDraft] = useState({
-    fullName: "",
-    companyName: "",
-    phone: "",
-    deliveryAddress: "",
-    city: "",
-    state: "",
-    postalCode: ""
-  });
-
-  const [paymentDraft, setPaymentDraft] = useState({
-    preferredPaymentMethod: "",
-    preferredPaymentHandle: ""
-  });
-
-  const paidOrders = useMemo(() => orders.filter((item) => item.paymentStatus === "PAID").length, [orders]);
+  const paidOrders = useMemo(
+    () => orders.filter((order) => order.paymentStatus === "PAID").length,
+    [orders]
+  );
+  const defaultAddress = useMemo(
+    () => addresses.find((address) => address.isDefault) ?? addresses[0] ?? null,
+    [addresses]
+  );
 
   useEffect(() => {
-    async function loadData() {
+    async function loadAccount() {
       try {
         setLoading(true);
         setError(null);
@@ -86,19 +89,6 @@ export function PortalDashboardPage() {
         setProfile(profileResponse);
         setOrders(ordersResponse);
         setAddresses(addressesResponse);
-        setProfileDraft({
-          fullName: profileResponse.fullName ?? "",
-          companyName: profileResponse.companyName ?? "",
-          phone: profileResponse.phone ?? "",
-          deliveryAddress: profileResponse.deliveryAddress ?? "",
-          city: profileResponse.city ?? "",
-          state: profileResponse.state ?? "",
-          postalCode: profileResponse.postalCode ?? ""
-        });
-        setPaymentDraft({
-          preferredPaymentMethod: profileResponse.preferredPaymentMethod ?? "",
-          preferredPaymentHandle: profileResponse.preferredPaymentHandle ?? ""
-        });
       } catch (errorValue) {
         setError(readErrorMessage(errorValue, "Unable to load account data."));
       } finally {
@@ -106,84 +96,89 @@ export function PortalDashboardPage() {
       }
     }
 
-    void loadData();
+    void loadAccount();
   }, []);
 
+  useEffect(() => {
+    setError(null);
+    setNotice(null);
+  }, [activeView]);
+
   if (!isCustomerAuthenticated()) {
-    return <Navigate to="/portal/login" replace />;
+    return <Navigate to={`/portal/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
-  async function handleProfileSave(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSavingProfile(true);
+  function clearMessages() {
     setError(null);
+    setNotice(null);
+  }
+
+  async function handleProfileSave(draft: CustomerProfileDraft) {
+    clearMessages();
+    setSavingProfile(true);
     try {
-      const response = await updateCustomerProfileApi(profileDraft);
-      setProfile(response);
+      setProfile(await updateCustomerProfileApi(draft));
+      setNotice("Profile details updated.");
+      return true;
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to update profile."));
+      return false;
     } finally {
       setSavingProfile(false);
     }
   }
 
-  async function handlePreferenceSave(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handlePreferenceSave(draft: CustomerPaymentDraft) {
+    clearMessages();
     setSavingPreference(true);
-    setError(null);
     try {
-      const response = await updateCustomerPaymentPreferenceApi(paymentDraft);
-      setProfile(response);
+      setProfile(await updateCustomerPaymentPreferenceApi(draft));
+      setNotice("Payment preference updated.");
+      return true;
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to update payment preference."));
+      return false;
     } finally {
       setSavingPreference(false);
     }
   }
 
-  async function handleAddressCreate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleAddressCreate(draft: CustomerAddressDraft) {
+    clearMessages();
     setSavingAddress(true);
-    setError(null);
     try {
-      await createCustomerAddressApi(addressForm);
-      const list = await fetchCustomerAddressesApi();
-      setAddresses(list);
-      setAddressForm({
-        label: "",
-        recipientName: "",
-        phone: "",
-        line1: "",
-        line2: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        country: "India",
-        isDefault: false
-      });
+      await createCustomerAddressApi(draft);
+      setAddresses(await fetchCustomerAddressesApi());
+      setNotice("Delivery address added.");
+      return true;
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to save address."));
+      return false;
     } finally {
       setSavingAddress(false);
     }
   }
 
-  async function handleDeleteAddress(addressId: number) {
+  async function handleAddressDelete(addressId: number) {
+    clearMessages();
     try {
       await deleteCustomerAddressApi(addressId);
-      setAddresses((current) => current.filter((item) => item.id !== addressId));
+      setAddresses((current) => current.filter((address) => address.id !== addressId));
+      setNotice("Saved address deleted.");
+      return true;
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to delete address."));
+      return false;
     }
   }
 
   async function handleRetryPayment(orderId: number) {
+    clearMessages();
     setRetryingOrderId(orderId);
-    setError(null);
     try {
       const session = await createOrderPaymentSessionApi(orderId, {
-        checkoutSuccessUrl: `${window.location.origin}/portal`,
-        checkoutFailureUrl: `${window.location.origin}/checkout`
+        checkoutSuccessUrl: `${window.location.origin}/portal/orders`,
+        checkoutFailureUrl: `${window.location.origin}/portal/orders`
       });
       if (session.paymentLink) {
         window.location.href = session.paymentLink;
@@ -194,8 +189,7 @@ export function PortalDashboardPage() {
         return;
       }
       setError(session.message || "Payment session is not available right now.");
-      const refreshedOrders = await fetchCustomerOrdersApi();
-      setOrders(refreshedOrders);
+      setOrders(await fetchCustomerOrdersApi());
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to re-initiate payment."));
     } finally {
@@ -203,260 +197,199 @@ export function PortalDashboardPage() {
     }
   }
 
+  function handleLogout() {
+    clearCustomerAccessToken();
+    navigate("/portal/login", { replace: true });
+  }
+
   return (
-    <section className="section page-top">
+    <section className="section page-top portal-account-page">
       <div className="container">
-        <div className="portal-header">
-          <div className="section-heading section-heading-left">
-            <span className="section-badge">Customer account</span>
-            <h1>Welcome, {profile ? firstName(profile.fullName) : "there"}</h1>
-            <p>Manage your orders, delivery addresses, and account details from one place.</p>
-          </div>
-          <button
-            type="button"
-            className="button button-secondary"
-            onClick={() => {
-              clearCustomerAccessToken();
-              navigate("/portal/login", { replace: true });
-            }}
-          >
-            Logout
-          </button>
+        <div className="portal-page-heading">
+          <span className="section-badge">Customer account</span>
+          <h1>My account</h1>
+          <p>Review orders, delivery details, and buyer information.</p>
         </div>
 
-        {error ? <p className="form-message form-message-error">{error}</p> : null}
-
-        {loading ? <p>Loading account data...</p> : null}
+        {loading ? <div className="portal-loading-state">Loading your account...</div> : null}
 
         {!loading && profile ? (
-          <>
-            <div className="stats-band portal-stats-band">
-              <article className="stats-item">
-                <strong>{orders.length}</strong>
-                <span>Total Orders</span>
-              </article>
-              <article className="stats-item">
-                <strong>{paidOrders}</strong>
-                <span>Paid Orders</span>
-              </article>
-              <article className="stats-item">
-                <strong>{addresses.length}</strong>
-                <span>Saved Addresses</span>
-              </article>
-              <article className="stats-item stats-item-identifier">
-                <strong>{profile.email}</strong>
-                <span>Account Email</span>
-              </article>
-            </div>
-
-            <div className="portal-layout-grid">
-              <article className="tracking-panel portal-panel portal-orders-panel">
-                <div className="portal-panel-header">
-                  <div>
-                    <span className="portal-panel-kicker">Order activity</span>
-                    <h2>Your orders</h2>
-                  </div>
-                  <Link className="button button-secondary button-small" to="/shop">Shop Products</Link>
+          <div className="portal-account-shell">
+            <aside className="portal-account-sidebar" aria-label="Customer account navigation">
+              <div className="portal-account-identity">
+                <span className="portal-account-avatar" aria-hidden="true">{getInitials(profile.fullName)}</span>
+                <div>
+                  <strong>{profile.fullName}</strong>
+                  <span>{profile.email}</span>
                 </div>
-                {orders.map((order) => (
-                  <div key={order.id} className="portal-order-card">
-                    <div className="portal-order-card-header">
-                      <div>
-                        <span className="portal-order-label">Order</span>
-                        <strong>{order.orderNumber}</strong>
-                        <small>{formatDate(order.createdAt)}</small>
-                      </div>
-                      <div className="portal-order-badges">
-                        <span className={`portal-status-badge portal-status-${order.status.toLowerCase()}`}>
-                          {formatStatus(order.status)}
-                        </span>
-                        <span className={`portal-payment-badge portal-payment-${order.paymentStatus.toLowerCase()}`}>
-                          Payment {formatStatus(order.paymentStatus)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="portal-order-summary">
-                      <div><span>Items</span><strong>{order.items.length}</strong></div>
-                      <div><span>Total</span><strong>{formatCurrency(order.totalAmount, order.currency)}</strong></div>
-                      <div><span>Delivery</span><strong>{order.city}, {order.state}</strong></div>
-                    </div>
-                    <div className="portal-order-items">
-                      {order.items.slice(0, 2).map((item) => (
-                        <span key={item.id}>{item.productName} &times; {item.quantity}</span>
-                      ))}
-                      {order.items.length > 2 ? <span>+ {order.items.length - 2} more items</span> : null}
-                    </div>
-                    <div className="portal-order-card-footer">
-                      <span>Created {formatDate(order.createdAt)}</span>
-                    {(order.paymentStatus === "PENDING" || order.paymentStatus === "FAILED" || order.paymentStatus === "NOT_INITIATED") ? (
-                      <button
-                        type="button"
-                        className="button button-primary button-small"
-                        onClick={() => void handleRetryPayment(order.id)}
-                        disabled={retryingOrderId === order.id}
-                      >
-                        {retryingOrderId === order.id ? "Please wait..." : "Pay Now"}
-                      </button>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
-                  </div>
-                ))}
-                {orders.length === 0 ? (
-                  <div className="portal-empty-state">
-                    <strong>No orders yet</strong>
-                    <p>Browse the catalog to start your first wholesale order.</p>
-                    <Link className="button button-primary button-small" to="/shop">Browse Catalog</Link>
-                  </div>
-                ) : null}
-              </article>
-
-              <article className="tracking-panel portal-panel">
-                <h3>Saved Addresses</h3>
-                {addresses.map((address) => (
-                  <div key={address.id} className="address-row">
-                    <div>
-                      <strong>{address.label} {address.isDefault ? "(Default)" : ""}</strong>
-                      <p>{address.recipientName} • {address.phone}</p>
-                      <p>{address.line1}{address.line2 ? `, ${address.line2}` : ""}</p>
-                      <p>{address.city}, {address.state} {address.postalCode}, {address.country}</p>
-                    </div>
-                    <button type="button" className="button button-secondary button-small" onClick={() => handleDeleteAddress(address.id)}>
-                      Delete
-                    </button>
-                  </div>
-                ))}
-                {addresses.length === 0 ? <p>No address saved yet.</p> : null}
-              </article>
-            </div>
-
-            <div className="portal-layout-grid">
-              <form className="order-form" onSubmit={handleProfileSave}>
-                <h3>Profile</h3>
-                <div className="form-grid two-up">
-                  <label>
-                    Full Name
-                    <input value={profileDraft.fullName} onChange={(event) => setProfileDraft((p) => ({ ...p, fullName: event.target.value }))} required />
-                  </label>
-                  <label>
-                    Company Name
-                    <input value={profileDraft.companyName} onChange={(event) => setProfileDraft((p) => ({ ...p, companyName: event.target.value }))} />
-                  </label>
-                  <label>
-                    Phone
-                    <input value={profileDraft.phone} onChange={(event) => setProfileDraft((p) => ({ ...p, phone: event.target.value }))} required />
-                  </label>
-                  <label>
-                    Delivery Address
-                    <input value={profileDraft.deliveryAddress} onChange={(event) => setProfileDraft((p) => ({ ...p, deliveryAddress: event.target.value }))} required />
-                  </label>
-                  <label>
-                    City
-                    <input value={profileDraft.city} onChange={(event) => setProfileDraft((p) => ({ ...p, city: event.target.value }))} required />
-                  </label>
-                  <label>
-                    State
-                    <input value={profileDraft.state} onChange={(event) => setProfileDraft((p) => ({ ...p, state: event.target.value }))} required />
-                  </label>
-                  <label>
-                    Postal Code
-                    <input value={profileDraft.postalCode} onChange={(event) => setProfileDraft((p) => ({ ...p, postalCode: event.target.value }))} required />
-                  </label>
-                </div>
-                <div className="form-actions">
-                  <button type="submit" className="button button-primary" disabled={savingProfile}>
-                    {savingProfile ? "Saving..." : "Save Profile"}
-                  </button>
-                </div>
-              </form>
-
-              <form className="order-form" onSubmit={handlePreferenceSave}>
-                <h3>Payment Preference</h3>
-                <div className="form-grid two-up">
-                  <label>
-                    Preferred Method
-                    <input
-                      placeholder="UPI / Card / Netbanking"
-                      value={paymentDraft.preferredPaymentMethod}
-                      onChange={(event) => setPaymentDraft((p) => ({ ...p, preferredPaymentMethod: event.target.value }))}
-                    />
-                  </label>
-                  <label>
-                    Preferred Handle
-                    <input
-                      placeholder="UPI ID or notes"
-                      value={paymentDraft.preferredPaymentHandle}
-                      onChange={(event) => setPaymentDraft((p) => ({ ...p, preferredPaymentHandle: event.target.value }))}
-                    />
-                  </label>
-                </div>
-                <div className="form-actions">
-                  <button type="submit" className="button button-primary" disabled={savingPreference}>
-                    {savingPreference ? "Saving..." : "Save Preference"}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <form className="order-form" onSubmit={handleAddressCreate}>
-              <h3>Add New Address</h3>
-              <div className="form-grid three-up">
-                <label>
-                  Label
-                  <input value={addressForm.label} onChange={(event) => setAddressForm((p) => ({ ...p, label: event.target.value }))} required />
-                </label>
-                <label>
-                  Recipient Name
-                  <input value={addressForm.recipientName} onChange={(event) => setAddressForm((p) => ({ ...p, recipientName: event.target.value }))} required />
-                </label>
-                <label>
-                  Phone
-                  <input value={addressForm.phone} onChange={(event) => setAddressForm((p) => ({ ...p, phone: event.target.value }))} required />
-                </label>
-                <label>
-                  Address Line 1
-                  <input value={addressForm.line1} onChange={(event) => setAddressForm((p) => ({ ...p, line1: event.target.value }))} required />
-                </label>
-                <label>
-                  Address Line 2
-                  <input value={addressForm.line2} onChange={(event) => setAddressForm((p) => ({ ...p, line2: event.target.value }))} />
-                </label>
-                <label>
-                  City
-                  <input value={addressForm.city} onChange={(event) => setAddressForm((p) => ({ ...p, city: event.target.value }))} required />
-                </label>
-                <label>
-                  State
-                  <input value={addressForm.state} onChange={(event) => setAddressForm((p) => ({ ...p, state: event.target.value }))} required />
-                </label>
-                <label>
-                  Postal Code
-                  <input value={addressForm.postalCode} onChange={(event) => setAddressForm((p) => ({ ...p, postalCode: event.target.value }))} required />
-                </label>
-                <label>
-                  Country
-                  <input value={addressForm.country} onChange={(event) => setAddressForm((p) => ({ ...p, country: event.target.value }))} required />
-                </label>
               </div>
-              <label className="inline-checkbox">
-                <input
-                  type="checkbox"
-                  checked={addressForm.isDefault}
-                  onChange={(event) => setAddressForm((p) => ({ ...p, isDefault: event.target.checked }))}
+              <nav className="portal-account-nav">
+                {PORTAL_NAV_ITEMS.map((item) => (
+                  <Link
+                    key={item.view}
+                    className={activeView === item.view ? "portal-account-nav-link active" : "portal-account-nav-link"}
+                    to={item.path}
+                    aria-current={activeView === item.view ? "page" : undefined}
+                  >
+                    <span>{item.label}</span>
+                    {item.view === "orders" ? <small>{orders.length}</small> : null}
+                    {item.view === "addresses" ? <small>{addresses.length}</small> : null}
+                  </Link>
+                ))}
+              </nav>
+              <Link className="portal-account-shop-link" to="/shop">Continue shopping</Link>
+              <button type="button" className="portal-account-logout" onClick={handleLogout}>Logout</button>
+            </aside>
+
+            <div className="portal-account-main">
+              {error ? <p className="form-message form-message-error" role="alert">{error}</p> : null}
+              {notice ? <p className="form-message form-message-success" role="status">{notice}</p> : null}
+
+              {activeView === "overview" ? (
+                <OverviewView
+                  profile={profile}
+                  orders={orders}
+                  paidOrders={paidOrders}
+                  addresses={addresses}
+                  defaultAddress={defaultAddress}
+                  retryingOrderId={retryingOrderId}
+                  onRetryPayment={handleRetryPayment}
                 />
-                <span>Set as default shipping address</span>
-              </label>
-              <div className="form-actions">
-                <button type="submit" className="button button-primary" disabled={savingAddress}>
-                  {savingAddress ? "Saving..." : "Save Address"}
-                </button>
-              </div>
-            </form>
-          </>
+              ) : null}
+
+              {activeView === "orders" ? (
+                <OrdersView orders={orders} retryingOrderId={retryingOrderId} onRetryPayment={handleRetryPayment} />
+              ) : null}
+
+              {activeView === "addresses" ? (
+                <CustomerAddressBook
+                  addresses={addresses}
+                  saving={savingAddress}
+                  onCreate={handleAddressCreate}
+                  onDelete={handleAddressDelete}
+                />
+              ) : null}
+
+              {activeView === "profile" ? (
+                <CustomerProfileSettings
+                  profile={profile}
+                  savingProfile={savingProfile}
+                  savingPayment={savingPreference}
+                  onSaveProfile={handleProfileSave}
+                  onSavePayment={handlePreferenceSave}
+                />
+              ) : null}
+            </div>
+          </div>
         ) : null}
       </div>
     </section>
   );
 }
 
+type OverviewViewProps = {
+  profile: CustomerProfile;
+  orders: CustomerOrder[];
+  paidOrders: number;
+  addresses: CustomerAddress[];
+  defaultAddress: CustomerAddress | null;
+  retryingOrderId: number | null;
+  onRetryPayment: (orderId: number) => void;
+};
+
+function OverviewView(props: OverviewViewProps) {
+  const { profile, orders, paidOrders, addresses, defaultAddress, retryingOrderId, onRetryPayment } = props;
+  return (
+    <section className="portal-view-section" aria-labelledby="overview-heading">
+      <div className="portal-view-heading">
+        <div>
+          <span className="portal-panel-kicker">Overview</span>
+          <h2 id="overview-heading">Welcome back, {firstName(profile.fullName)}</h2>
+          <p>Here is the latest activity for your buyer account.</p>
+        </div>
+      </div>
+
+      <div className="portal-summary-grid">
+        <Link to="/portal/orders"><strong>{orders.length}</strong><span>Total orders</span></Link>
+        <Link to="/portal/orders"><strong>{paidOrders}</strong><span>Paid orders</span></Link>
+        <Link to="/portal/addresses"><strong>{addresses.length}</strong><span>Saved addresses</span></Link>
+      </div>
+
+      <div className="portal-overview-grid">
+        <section className="portal-content-panel" aria-labelledby="recent-orders-heading">
+          <div className="portal-panel-header">
+            <div>
+              <span className="portal-panel-kicker">Order activity</span>
+              <h2 id="recent-orders-heading">Recent orders</h2>
+            </div>
+            <Link to="/portal/orders">View all</Link>
+          </div>
+          {orders.slice(0, 2).map((order) => (
+            <CustomerOrderCard key={order.id} order={order} retrying={retryingOrderId === order.id} onRetryPayment={onRetryPayment} />
+          ))}
+          {orders.length === 0 ? <OrdersEmptyState /> : null}
+        </section>
+
+        <section className="portal-content-panel" aria-labelledby="default-address-heading">
+          <div className="portal-panel-header">
+            <div>
+              <span className="portal-panel-kicker">Delivery</span>
+              <h2 id="default-address-heading">Default address</h2>
+            </div>
+            <Link to="/portal/addresses">Manage</Link>
+          </div>
+          {defaultAddress ? (
+            <div className="portal-default-address">
+              <strong>{defaultAddress.label}</strong>
+              <p>{defaultAddress.recipientName} &middot; {defaultAddress.phone}</p>
+              <address>{defaultAddress.line1}{defaultAddress.line2 ? `, ${defaultAddress.line2}` : ""}<br />{defaultAddress.city}, {defaultAddress.state} {defaultAddress.postalCode}</address>
+            </div>
+          ) : (
+            <div className="portal-empty-state">
+              <strong>No delivery address</strong>
+              <p>Add an address before placing your next order.</p>
+              <Link className="button button-primary button-small" to="/portal/addresses">Add Address</Link>
+            </div>
+          )}
+        </section>
+      </div>
+    </section>
+  );
+}
+
+type OrdersViewProps = {
+  orders: CustomerOrder[];
+  retryingOrderId: number | null;
+  onRetryPayment: (orderId: number) => void;
+};
+
+function OrdersView({ orders, retryingOrderId, onRetryPayment }: OrdersViewProps) {
+  return (
+    <section className="portal-view-section" aria-labelledby="orders-heading">
+      <div className="portal-view-heading">
+        <div>
+          <span className="portal-panel-kicker">Purchases</span>
+          <h2 id="orders-heading">Order history</h2>
+          <p>Track status, payment, item quantities, and delivery location for every order.</p>
+        </div>
+        <Link className="button button-primary button-small" to="/shop">Shop Products</Link>
+      </div>
+      <div className="portal-orders-list">
+        {orders.map((order) => (
+          <CustomerOrderCard key={order.id} order={order} retrying={retryingOrderId === order.id} onRetryPayment={onRetryPayment} />
+        ))}
+      </div>
+      {orders.length === 0 ? <OrdersEmptyState /> : null}
+    </section>
+  );
+}
+
+function OrdersEmptyState() {
+  return (
+    <div className="portal-empty-state">
+      <strong>No orders yet</strong>
+      <p>Browse the catalog to start your first wholesale order.</p>
+      <Link className="button button-primary button-small" to="/shop">Browse Catalog</Link>
+    </div>
+  );
+}
