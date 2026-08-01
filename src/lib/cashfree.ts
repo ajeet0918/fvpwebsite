@@ -1,6 +1,6 @@
 type CashfreeCheckoutOptions = {
   paymentSessionId: string;
-  redirectTarget?: "_self" | "_blank" | "_top" | "_parent";
+  redirectTarget?: "_self" | "_blank" | "_top" | "_parent" | "_modal";
 };
 
 type CashfreeInstance = {
@@ -79,7 +79,7 @@ export async function openCashfreeCheckout(paymentSessionId: string): Promise<vo
   const cashfree = window.Cashfree({ mode: resolveMode() });
   await cashfree.checkout({
     paymentSessionId,
-    redirectTarget: "_self"
+    redirectTarget: "_modal"
   });
 }
 

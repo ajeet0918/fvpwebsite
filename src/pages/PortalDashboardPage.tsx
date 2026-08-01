@@ -180,12 +180,14 @@ export function PortalDashboardPage() {
         checkoutSuccessUrl: `${window.location.origin}/portal/orders`,
         checkoutFailureUrl: `${window.location.origin}/portal/orders`
       });
-      if (session.paymentLink) {
-        window.location.href = session.paymentLink;
-        return;
-      }
       if (session.paymentSessionId) {
         await openCashfreeCheckout(session.paymentSessionId);
+        setOrders(await fetchCustomerOrdersApi());
+        setNotice("Payment attempt completed. The latest order status is shown below.");
+        return;
+      }
+      if (session.paymentLink) {
+        window.location.href = session.paymentLink;
         return;
       }
       setError(session.message || "Payment session is not available right now.");

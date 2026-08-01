@@ -149,12 +149,16 @@ export function CheckoutPage() {
 
       clearCart();
       setCartItemsState([]);
-      if (result.paymentLink) {
-        window.location.href = result.paymentLink;
-        return;
-      }
       if (result.paymentSessionId) {
         await openCashfreeCheckout(result.paymentSessionId);
+        setOrderCreated({
+          orderNumber: result.orderNumber,
+          message: "Your payment attempt is complete. View your orders for the confirmed payment status."
+        });
+        return;
+      }
+      if (result.paymentLink) {
+        window.location.href = result.paymentLink;
         return;
       }
       setOrderCreated({
