@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { CartQuantityControl } from "../components/CartQuantityControl";
 import { fetchProductsApi, readErrorMessage } from "../lib/api";
-import { addToCart } from "../lib/cart";
+import {
+  addToCart,
+  CART_UPDATED_EVENT,
+  getCartItems,
+  removeFromCart,
+  updateCartQuantity,
+  type CartItem
+} from "../lib/cart";
 import { resolveDocumentImageUrl } from "../lib/documents";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
@@ -24,6 +32,7 @@ export function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cartMessage, setCartMessage] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => getCartItems());
 
   const activeCategory = searchParams.get("category")?.trim().toLowerCase() ?? "";
   const categories = useMemo(
@@ -55,6 +64,16 @@ export function ShopPage() {
     void loadProducts();
   }, []);
 
+  useEffect(() => {
+    const syncCart = () => setCartItems(getCartItems());
+    window.addEventListener(CART_UPDATED_EVENT, syncCart);
+    window.addEventListener("storage", syncCart);
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, syncCart);
+      window.removeEventListener("storage", syncCart);
+    };
+  }, []);
+
   function setCategoryFilter(nextCategory: string) {
     if (!nextCategory) {
       setSearchParams({});
@@ -65,12 +84,23 @@ export function ShopPage() {
 
   function handleAddToCart(slug: string) {
     try {
-      addToCart(slug, 1);
+      setCartItems(addToCart(slug, 1));
       setCartMessage("Product added to cart.");
       window.setTimeout(() => setCartMessage(null), 1800);
     } catch (errorValue) {
       setCartMessage(readErrorMessage(errorValue, "Unable to add this product to cart."));
     }
+  }
+
+  function changeCartQuantity(slug: string, nextQuantity: number) {
+    const nextCart = nextQuantity <= 0
+      ? removeFromCart(slug)
+      : updateCartQuantity(slug, nextQuantity);
+    setCartItems(nextCart);
+  }
+
+  function getProductQuantity(slug: string) {
+    return cartItems.find((item) => item.productSlug === slug)?.quantity ?? 0;
   }
 
   return (
@@ -107,7 +137,9 @@ export function ShopPage() {
         {loading ? <p>Loading catalog...</p> : null}
 
         <div className="product-grid">
-          {filteredProducts.map((product, index) => (
+          {filteredProducts.map((product, index) => {
+            const cartQuantity = getProductQuantity(product.slug);
+            return (
             <article key={product.id} className="product-card">
               <div className="product-media">
                 <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
@@ -125,13 +157,24 @@ export function ShopPage() {
                 <p>{product.shortDescription}</p>
                 <div className="shop-card-actions">
                   <Link className="button button-secondary button-small" to={`/shop/${product.slug}`}>View Details</Link>
-                  <button type="button" className="button button-primary button-small" onClick={() => handleAddToCart(product.slug)}>
-                    Add To Cart
-                  </button>
+                  {cartQuantity > 0 ? (
+                    <CartQuantityControl
+                      compact
+                      productName={product.name}
+                      quantity={cartQuantity}
+                      onDecrease={() => changeCartQuantity(product.slug, cartQuantity - 1)}
+                      onIncrease={() => changeCartQuantity(product.slug, cartQuantity + 1)}
+                    />
+                  ) : (
+                    <button type="button" className="button button-primary button-small" onClick={() => handleAddToCart(product.slug)}>
+                      Add To Cart
+                    </button>
+                  )}
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
         {!loading && filteredProducts.length === 0 ? <p>No products found for this category.</p> : null}

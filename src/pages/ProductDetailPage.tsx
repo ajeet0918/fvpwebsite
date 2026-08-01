@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { CartQuantityControl } from "../components/CartQuantityControl";
 import { fetchProductBySlugApi, readErrorMessage } from "../lib/api";
-import { addToCart } from "../lib/cart";
+import {
+  addToCart,
+  CART_UPDATED_EVENT,
+  getCartItems,
+  removeFromCart,
+  updateCartQuantity,
+  type CartItem
+} from "../lib/cart";
 import { resolveDocumentImageUrl } from "../lib/documents";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
@@ -44,10 +52,8 @@ export function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
-  const [cartCount, setCartCount] = useState(0);
-  const [cartAdded, setCartAdded] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => getCartItems());
 
   useEffect(() => {
     async function loadProduct() {
@@ -72,16 +78,28 @@ export function ProductDetailPage() {
     void loadProduct();
   }, [slug]);
 
+  useEffect(() => {
+    const syncCart = () => setCartItems(getCartItems());
+    window.addEventListener(CART_UPDATED_EVENT, syncCart);
+    window.addEventListener("storage", syncCart);
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, syncCart);
+      window.removeEventListener("storage", syncCart);
+    };
+  }, []);
+
+  const cartQuantity = product
+    ? cartItems.find((item) => item.productSlug === product.slug)?.quantity ?? 0
+    : 0;
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
   function handleAddToCart() {
     if (!product) {
       return;
     }
 
     try {
-      const updatedCart = addToCart(product.slug, quantity);
-      const updatedCount = updatedCart.reduce((total, item) => total + item.quantity, 0);
-      setCartCount(updatedCount);
-      setCartAdded(true);
+      setCartItems(addToCart(product.slug, 1));
       setMessage(`${product.name} added to cart.`);
       window.setTimeout(() => setMessage(null), 2400);
     } catch (errorValue) {
@@ -89,13 +107,12 @@ export function ProductDetailPage() {
     }
   }
 
-  function changeQuantity(delta: number) {
-    setQuantity((current) => Math.max(1, current + delta));
-  }
-
-  function handleQuantityChange(value: string) {
-    const parsedValue = Number(value);
-    setQuantity(Number.isFinite(parsedValue) && parsedValue > 0 ? Math.floor(parsedValue) : 1);
+  function changeCartQuantity(nextQuantity: number) {
+    if (!product) return;
+    const nextCart = nextQuantity <= 0
+      ? removeFromCart(product.slug)
+      : updateCartQuantity(product.slug, nextQuantity);
+    setCartItems(nextCart);
   }
 
   return (
@@ -162,28 +179,23 @@ export function ProductDetailPage() {
 
               <div className="product-detail-purchase">
                 <div className="product-detail-purchase-heading">
-                  <h2>Order quantity</h2>
-                  <span>Wholesale quantity is confirmed during order review.</span>
-                </div>
-                <div className="product-detail-purchase-row">
-                  <div className="quantity-control" aria-label="Order quantity">
-                    <button type="button" onClick={() => changeQuantity(-1)} aria-label="Decrease quantity">-</button>
-                    <input
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={quantity}
-                      onChange={(event) => handleQuantityChange(event.target.value)}
-                      aria-label="Quantity"
-                    />
-                    <button type="button" onClick={() => changeQuantity(1)} aria-label="Increase quantity">+</button>
-                  </div>
-                  <span className="product-detail-unit-hint">{product.priceUnit || "units"}</span>
+                  <h2>Cart quantity</h2>
+                  <span>Adjust units here or during checkout.</span>
                 </div>
                 <div className="product-detail-actions">
-                  <button type="button" className="button button-primary" onClick={handleAddToCart} aria-live="polite">
-                    {cartAdded ? "Added to Cart" : "Add To Cart"}
-                  </button>
+                  {cartQuantity > 0 ? (
+                    <CartQuantityControl
+                      productName={product.name}
+                      quantity={cartQuantity}
+                      onDecrease={() => changeCartQuantity(cartQuantity - 1)}
+                      onIncrease={() => changeCartQuantity(cartQuantity + 1)}
+                    />
+                  ) : (
+                    <button type="button" className="button button-primary" onClick={handleAddToCart}>
+                      Add To Cart
+                    </button>
+                  )}
+                  <span className="product-detail-unit-hint">{product.priceUnit || "units"}</span>
                   <Link className="button button-secondary" to={`/order-request?product=${encodeURIComponent(product.slug)}`}>
                     Request Bulk Quote
                   </Link>

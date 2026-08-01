@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { CookieBanner } from "./CookieBanner";
-import { policyLinks } from "../data/policies";
+import { SiteFooter } from "./SiteFooter";
 import { CART_UPDATED_EVENT, getCartItems } from "../lib/cart";
 
 const navLinks = [
@@ -14,6 +14,12 @@ const navLinks = [
   { key: "portal", name: "My Account", type: "route", path: "/portal/login" }
 ] as const;
 
+function usesCompactFooter(pathname: string) {
+  return ["/checkout", "/portal", "/partner", "/invoice"].some((route) =>
+    pathname.startsWith(route)
+  );
+}
+
 export function PublicLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,6 +27,14 @@ export function PublicLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [cartCount, setCartCount] = useState(0);
+  const compactFooter = usesCompactFooter(location.pathname);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    if (!location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [location.hash, location.pathname]);
 
   useEffect(() => {
     const syncCartCount = () => {
@@ -226,56 +240,10 @@ export function PublicLayout() {
         </div>
       </nav>
 
-      <main>
+      <main className={compactFooter ? "site-main site-main-workflow" : "site-main"}>
         <Outlet />
       </main>
-
-      <footer className="footer">
-        <div className="container footer-main">
-          <div className="footer-column footer-brand-column">
-            <NavLink className="brand brand-footer" to="/">
-              <span className="brand-mark brand-mark-image">
-                <img src="/assets/logofvp.jpeg" alt="Pure Pick logo" />
-              </span>
-              <span className="brand-copy">
-                <span className="brand-name">FVP Purepick</span>
-                <span className="brand-subtitle">Agricultural Wholesale</span>
-              </span>
-            </NavLink>
-            <p>
-              Wholesale agricultural products for businesses and growers, with clear buyer policies and support.
-            </p>
-          </div>
-
-          <div className="footer-column">
-            <h3>Legal</h3>
-            <ul className="footer-legal-list">
-              {policyLinks.map((policy) => (
-                <li key={policy.slug}>
-                  <NavLink to={`/policies#${policy.slug}`}>{policy.title}</NavLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="footer-column">
-            <h3>Contact Us</h3>
-            <div className="contact-list">
-              <a href="tel:+919650035272">+(91)-9650035272</a>
-              <a href="mailto:contact@fvpurepick.com">contact@fvpurepick.com</a>
-              <a className="button button-whatsapp" href="https://wa.me/919650035272" target="_blank" rel="noreferrer">
-                WhatsApp Us
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <div className="container footer-bottom-row">
-            <span>Copyright 2026 FVP Purepick</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter compact={compactFooter} />
       <CookieBanner />
     </div>
   );
