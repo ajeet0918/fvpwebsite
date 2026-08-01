@@ -1950,7 +1950,8 @@ input {
 }
 
 .portal-status-badge,
-.portal-payment-badge {
+.portal-payment-badge,
+.portal-refund-badge {
   display: inline-flex;
   align-items: center;
   min-height: 26px;
@@ -1981,9 +1982,26 @@ input {
   color: #b91c1c;
 }
 
+.portal-refund-badge {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.portal-refund-refunded,
+.portal-refund-partially_refunded {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.portal-refund-failed,
+.portal-refund-cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .portal-order-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
 }
 

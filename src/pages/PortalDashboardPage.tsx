@@ -190,8 +190,14 @@ export function PortalDashboardPage() {
         window.location.href = session.paymentLink;
         return;
       }
+      const latestOrders = await fetchCustomerOrdersApi();
+      setOrders(latestOrders);
+      const updatedOrder = latestOrders.find((order) => order.id === orderId);
+      if (updatedOrder?.paymentStatus === "PAID") {
+        setNotice(session.message || "Payment is confirmed.");
+        return;
+      }
       setError(session.message || "Payment session is not available right now.");
-      setOrders(await fetchCustomerOrdersApi());
     } catch (errorValue) {
       setError(readErrorMessage(errorValue, "Unable to re-initiate payment."));
     } finally {

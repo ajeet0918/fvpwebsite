@@ -35,6 +35,8 @@ function getLatestActivity(order: CustomerOrder) {
 }
 
 export function CustomerOrderCard({ order, retrying, onRetryPayment }: CustomerOrderCardProps) {
+  const refundSummary = order.refundSummary;
+
   return (
     <article className="portal-order-card">
       <div className="portal-order-card-header">
@@ -50,6 +52,11 @@ export function CustomerOrderCard({ order, retrying, onRetryPayment }: CustomerO
           <span className={`portal-payment-badge portal-payment-${order.paymentStatus.toLowerCase()}`}>
             Payment {formatStatus(order.paymentStatus)}
           </span>
+          {refundSummary && refundSummary.status !== "NOT_REQUESTED" ? (
+            <span className={`portal-refund-badge portal-refund-${refundSummary.status.toLowerCase()}`}>
+              Refund {formatStatus(refundSummary.status)}
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -57,6 +64,12 @@ export function CustomerOrderCard({ order, retrying, onRetryPayment }: CustomerO
         <div><span>Items</span><strong>{order.items.length}</strong></div>
         <div><span>Order total</span><strong>{formatCurrency(order.totalAmount, order.currency)}</strong></div>
         <div><span>Delivery location</span><strong>{order.city}, {order.state}</strong></div>
+        {refundSummary && (refundSummary.refundedAmount > 0 || refundSummary.pendingAmount > 0) ? (
+          <div>
+            <span>{refundSummary.pendingAmount > 0 ? "Refund processing" : "Amount refunded"}</span>
+            <strong>{formatCurrency(refundSummary.pendingAmount || refundSummary.refundedAmount, order.currency)}</strong>
+          </div>
+        ) : null}
       </div>
 
       <div className="portal-order-items" aria-label="Order items">
