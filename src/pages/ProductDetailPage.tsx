@@ -11,6 +11,7 @@ import {
   type CartItem
 } from "../lib/cart";
 import { resolveDocumentImageUrl } from "../lib/documents";
+import { formatProductPrice } from "../lib/formatters";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
 
@@ -27,19 +28,6 @@ function resolveProductImage(product: Product) {
 
 function resolveFallbackImage(product: Product) {
   return localProductImages[product.slug] ?? DEFAULT_PRODUCT_IMAGE;
-}
-
-function formatPrice(value: number | null, unit: string) {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "Price on request";
-  }
-
-  const formattedValue = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 2
-  }).format(value);
-  return `${formattedValue} / ${unit || "unit"}`;
 }
 
 function buildWhatsAppUrl(product: Product) {
@@ -165,7 +153,7 @@ export function ProductDetailPage() {
               <dl className="product-detail-meta">
                 <div>
                   <dt>Price</dt>
-                  <dd>{formatPrice(product.price, product.priceUnit)}</dd>
+                  <dd>{formatProductPrice(product.price, product.priceUnit)}</dd>
                 </div>
                 <div>
                   <dt>Selling unit</dt>

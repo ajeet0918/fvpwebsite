@@ -11,6 +11,7 @@ import {
   type CartItem
 } from "../lib/cart";
 import { resolveDocumentImageUrl } from "../lib/documents";
+import { formatProductPrice } from "../lib/formatters";
 import type { Product } from "../types/domain";
 import { localProductImages } from "../data/productImages";
 
@@ -139,40 +140,45 @@ export function ShopPage() {
         <div className="product-grid">
           {filteredProducts.map((product, index) => {
             const cartQuantity = getProductQuantity(product.slug);
+            const formattedPrice = formatProductPrice(product.price, product.priceUnit);
             return (
-            <article key={product.id} className="product-card">
-              <div className="product-media">
-                <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
-                <img
-                  src={resolveProductImage(product)}
-                  alt={product.name}
-                  onError={(event) => {
-                    event.currentTarget.src = resolveFallbackImage(product);
-                  }}
-                />
-              </div>
-              <div className="product-body">
-                <span className="product-category">{product.category}</span>
-                <h3>{product.name}</h3>
-                <p>{product.shortDescription}</p>
-                <div className="shop-card-actions">
-                  <Link className="button button-secondary button-small" to={`/shop/${product.slug}`}>View Details</Link>
-                  {cartQuantity > 0 ? (
-                    <CartQuantityControl
-                      compact
-                      productName={product.name}
-                      quantity={cartQuantity}
-                      onDecrease={() => changeCartQuantity(product.slug, cartQuantity - 1)}
-                      onIncrease={() => changeCartQuantity(product.slug, cartQuantity + 1)}
-                    />
-                  ) : (
-                    <button type="button" className="button button-primary button-small" onClick={() => handleAddToCart(product.slug)}>
-                      Add To Cart
-                    </button>
-                  )}
+              <article key={product.id} className="product-card">
+                <div className="product-media">
+                  <div className={`product-wash ${index % 3 === 0 ? "product-wash-green" : index % 3 === 1 ? "product-wash-emerald" : "product-wash-teal"}`} />
+                  <img
+                    src={resolveProductImage(product)}
+                    alt={product.name}
+                    onError={(event) => {
+                      event.currentTarget.src = resolveFallbackImage(product);
+                    }}
+                  />
                 </div>
-              </div>
-            </article>
+                <div className="product-body">
+                  <span className="product-category">{product.category}</span>
+                  <h3>{product.name}</h3>
+                  <p>{product.shortDescription}</p>
+                  <div className="product-card-price" aria-label={`Price ${formattedPrice}`}>
+                    <span className="product-card-price-label">Price</span>
+                    <strong className="product-card-price-value">{formattedPrice}</strong>
+                  </div>
+                  <div className="shop-card-actions">
+                    <Link className="button button-secondary button-small" to={`/shop/${product.slug}`}>View Details</Link>
+                    {cartQuantity > 0 ? (
+                      <CartQuantityControl
+                        compact
+                        productName={product.name}
+                        quantity={cartQuantity}
+                        onDecrease={() => changeCartQuantity(product.slug, cartQuantity - 1)}
+                        onIncrease={() => changeCartQuantity(product.slug, cartQuantity + 1)}
+                      />
+                    ) : (
+                      <button type="button" className="button button-primary button-small" onClick={() => handleAddToCart(product.slug)}>
+                        Add To Cart
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
             );
           })}
         </div>
