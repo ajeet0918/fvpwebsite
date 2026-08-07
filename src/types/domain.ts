@@ -27,8 +27,18 @@ export type OrderStatus =
 export type OrderPaymentStatus =
   | "NOT_INITIATED"
   | "PENDING"
+  | "DUE"
   | "PAID"
   | "FAILED";
+
+export type OrderPaymentMethod =
+  | "ONLINE"
+  | "CASH_ON_DELIVERY"
+  | "PAY_AFTER_DELIVERY_ONLINE"
+  | "CASH"
+  | "BANK_TRANSFER";
+
+export type OrderCancellationStatus = "NONE" | "REQUESTED" | "APPROVED" | "REJECTED";
 
 export type OrderRefundStatus = "PENDING" | "SUCCESS" | "FAILED" | "CANCELLED" | "ONHOLD";
 
@@ -88,12 +98,20 @@ export type Order = {
   customerNotes: string;
   status: OrderStatus;
   currency: string;
+  paymentMethod: OrderPaymentMethod;
   paymentStatus: OrderPaymentStatus;
   paymentDueAmount: number | null;
+  paymentDueAt: string | null;
   paymentProvider: string | null;
   paymentProviderOrderId: string | null;
   paymentProviderReference: string | null;
+  paymentCollectedBy: string | null;
+  paymentCollectionReference: string | null;
   paidAt: string | null;
+  cancellationStatus: OrderCancellationStatus;
+  cancellationReason: string | null;
+  cancellationRequestedAt: string | null;
+  cancellationDecisionNote: string | null;
   refundSummary?: OrderRefundSummary;
   refunds?: OrderRefund[];
   createdAt: string;
@@ -128,6 +146,7 @@ export type CustomerProfile = {
   postalCode: string;
   preferredPaymentMethod: string | null;
   preferredPaymentHandle: string | null;
+  deferredPaymentEligible: boolean;
 };
 
 export type CustomerAddress = {

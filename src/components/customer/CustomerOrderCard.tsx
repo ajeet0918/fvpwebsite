@@ -4,6 +4,7 @@ type CustomerOrderCardProps = {
   order: CustomerOrder;
   retrying: boolean;
   onRetryPayment: (orderId: number) => void;
+  onRequestCancellation: (orderId: number) => void;
 };
 
 function formatCurrency(value: number | null, currency = "INR") {
@@ -23,7 +24,11 @@ function formatStatus(value: string) {
 }
 
 function canRetryPayment(order: CustomerOrder) {
-  return ["PENDING", "FAILED", "NOT_INITIATED"].includes(order.paymentStatus);
+  return ["PENDING", "FAILED", "NOT_INITIATED", "DUE"].includes(order.paymentStatus)
+    && (order.paymentMethod === "ONLINE"
+      || ((order.paymentMethod === "CASH_ON_DELIVERY" || order.paymentMethod === "PAY_AFTER_DELIVERY_ONLINE")
+        && order.status === "DELIVERED")
+      );
 }
 
 function getLatestActivity(order: CustomerOrder) {
@@ -34,7 +39,7 @@ function getLatestActivity(order: CustomerOrder) {
   return `${formatStatus(latestHistory.status)} ${formatDate(latestHistory.changedAt)}`;
 }
 
-export function CustomerOrderCard({ order, retrying, onRetryPayment }: CustomerOrderCardProps) {
+export function CustomerOrderCard({ order, retrying, onRetryPayment, onRequestCancellation }: CustomerOrderCardProps) {
   const refundSummary = order.refundSummary;
 
   return (
@@ -50,7 +55,9 @@ export function CustomerOrderCard({ order, retrying, onRetryPayment }: CustomerO
             {formatStatus(order.status)}
           </span>
           <span className={`portal-payment-badge portal-payment-${order.paymentStatus.toLowerCase()}`}>
-            Payment {formatStatus(order.paymentStatus)}
+            {order.paymentStatus === "DUE" && order.paymentMethod === "CASH_ON_DELIVERY"
+              ? "Cash due on delivery"
+              : `Payment ${formatStatus(order.paymentStatus)}`}
           </span>
           {refundSummary && refundSummary.status !== "NOT_REQUESTED" ? (
             <span className={`portal-refund-badge portal-refund-${refundSummary.status.toLowerCase()}`}>
@@ -81,16 +88,23 @@ export function CustomerOrderCard({ order, retrying, onRetryPayment }: CustomerO
 
       <div className="portal-order-card-footer">
         <span>{getLatestActivity(order)}</span>
-        {canRetryPayment(order) ? (
-          <button
-            type="button"
-            className="button button-primary button-small"
-            onClick={() => onRetryPayment(order.id)}
-            disabled={retrying}
-          >
-            {retrying ? "Preparing payment..." : "Pay Now"}
-          </button>
-        ) : null}
+        <div className="portal-order-actions">
+          {order.cancellationStatus === "NONE" && ["PENDING_REVIEW", "QUOTED", "CONFIRMED"].includes(order.status) ? (
+            <button type="button" className="button button-secondary button-small" onClick={() => onRequestCancellation(order.id)}>
+              Request cancellation
+            </button>
+          ) : null}
+          {canRetryPayment(order) ? (
+            <button
+              type="button"
+              className="button button-primary button-small"
+              onClick={() => onRetryPayment(order.id)}
+              disabled={retrying}
+            >
+              {retrying ? "Preparing payment..." : "Pay Now"}
+            </button>
+          ) : null}
+        </div>
       </div>
     </article>
   );

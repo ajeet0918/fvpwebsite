@@ -7,6 +7,7 @@ import {
   fetchCustomerAddressesApi,
   fetchCustomerOrdersApi,
   fetchCustomerProfileApi,
+  requestOrderCancellationApi,
   readErrorMessage,
   updateCustomerPaymentPreferenceApi,
   updateCustomerProfileApi
@@ -66,6 +67,7 @@ export function PortalDashboardPage() {
   const [savingPreference, setSavingPreference] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [retryingOrderId, setRetryingOrderId] = useState<number | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
 
   const paidOrders = useMemo(
     () => orders.filter((order) => order.paymentStatus === "PAID").length,
@@ -205,6 +207,24 @@ export function PortalDashboardPage() {
     }
   }
 
+  async function handleRequestCancellation(orderId: number) {
+    const reason = window.prompt("Tell us why you want to cancel this order:");
+    if (!reason || reason.trim().length < 5) {
+      return;
+    }
+    clearMessages();
+    setCancellingOrderId(orderId);
+    try {
+      const updatedOrder = await requestOrderCancellationApi(orderId, reason.trim());
+      setOrders((current) => current.map((order) => order.id === updatedOrder.id ? updatedOrder : order));
+      setNotice("Cancellation request submitted. Our team will review it before procurement or dispatch.");
+    } catch (errorValue) {
+      setError(readErrorMessage(errorValue, "Unable to request cancellation."));
+    } finally {
+      setCancellingOrderId(null);
+    }
+  }
+
   function handleLogout() {
     clearCustomerAccessToken();
     navigate("/portal/login", { replace: true });
@@ -262,11 +282,12 @@ export function PortalDashboardPage() {
                   defaultAddress={defaultAddress}
                   retryingOrderId={retryingOrderId}
                   onRetryPayment={handleRetryPayment}
+                  onRequestCancellation={handleRequestCancellation}
                 />
               ) : null}
 
               {activeView === "orders" ? (
-                <OrdersView orders={orders} retryingOrderId={retryingOrderId} onRetryPayment={handleRetryPayment} />
+                <OrdersView orders={orders} retryingOrderId={retryingOrderId} onRetryPayment={handleRetryPayment} onRequestCancellation={handleRequestCancellation} />
               ) : null}
 
               {activeView === "addresses" ? (
@@ -303,10 +324,11 @@ type OverviewViewProps = {
   defaultAddress: CustomerAddress | null;
   retryingOrderId: number | null;
   onRetryPayment: (orderId: number) => void;
+  onRequestCancellation: (orderId: number) => void;
 };
 
 function OverviewView(props: OverviewViewProps) {
-  const { profile, orders, paidOrders, addresses, defaultAddress, retryingOrderId, onRetryPayment } = props;
+  const { profile, orders, paidOrders, addresses, defaultAddress, retryingOrderId, onRetryPayment, onRequestCancellation } = props;
   return (
     <section className="portal-view-section" aria-labelledby="overview-heading">
       <div className="portal-view-heading">
@@ -333,7 +355,7 @@ function OverviewView(props: OverviewViewProps) {
             <Link to="/portal/orders">View all</Link>
           </div>
           {orders.slice(0, 2).map((order) => (
-            <CustomerOrderCard key={order.id} order={order} retrying={retryingOrderId === order.id} onRetryPayment={onRetryPayment} />
+            <CustomerOrderCard key={order.id} order={order} retrying={retryingOrderId === order.id} onRetryPayment={onRetryPayment} onRequestCancellation={onRequestCancellation} />
           ))}
           {orders.length === 0 ? <OrdersEmptyState /> : null}
         </section>
@@ -369,9 +391,10 @@ type OrdersViewProps = {
   orders: CustomerOrder[];
   retryingOrderId: number | null;
   onRetryPayment: (orderId: number) => void;
+  onRequestCancellation: (orderId: number) => void;
 };
 
-function OrdersView({ orders, retryingOrderId, onRetryPayment }: OrdersViewProps) {
+function OrdersView({ orders, retryingOrderId, onRetryPayment, onRequestCancellation }: OrdersViewProps) {
   return (
     <section className="portal-view-section" aria-labelledby="orders-heading">
       <div className="portal-view-heading">
@@ -384,7 +407,7 @@ function OrdersView({ orders, retryingOrderId, onRetryPayment }: OrdersViewProps
       </div>
       <div className="portal-orders-list">
         {orders.map((order) => (
-          <CustomerOrderCard key={order.id} order={order} retrying={retryingOrderId === order.id} onRetryPayment={onRetryPayment} />
+          <CustomerOrderCard key={order.id} order={order} retrying={retryingOrderId === order.id} onRetryPayment={onRetryPayment} onRequestCancellation={onRequestCancellation} />
         ))}
       </div>
       {orders.length === 0 ? <OrdersEmptyState /> : null}

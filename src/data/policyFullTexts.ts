@@ -793,6 +793,13 @@ The Company may accept payments through:
 - Any other officially approved payment method
 The Company reserves the right to change or discontinue any payment method without prior
 notice.
+Cash on delivery, where enabled at checkout, is available only for orders accepted by the
+Company and payment is due in full at delivery. The customer must provide a responsible
+recipient and may be required to show delivery confirmation before goods are handed over.
+Online payment after delivery is a deferred business payment facility available only to
+customers whose account has been expressly approved by the Company. The payment link will
+be made available after delivery and the customer must pay by the due date stated by the
+Company. Failure to pay may suspend future orders and credit facilities.
 18. GST & Taxation
 All prices shall be exclusive of GST unless expressly stated otherwise.
 GST and any other applicable taxes shall be charged according to prevailing Indian laws.
@@ -1641,6 +1648,11 @@ incurred.
 If cancellation is approved by the Company, any eligible refund will normally be processed within
 7-10 business days through the original payment method or by bank transfer, as applicable.
 Actual credit timelines may depend on the customer's bank or payment service provider.
+Orders placed on cash on delivery that are cancelled before payment do not create a refund.
+If cash on delivery has already been collected, any approved refund will ordinarily be handled
+by bank transfer after verification; cash refunds are generally not provided. For approved
+deferred-payment orders, cancellation does not remove any amount already due or any valid
+claim for costs incurred before cancellation.
 13. Customer Responsibilities
 Customers should:
 - Verify product specifications before confirming an order.
