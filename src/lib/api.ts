@@ -11,7 +11,8 @@ import type {
   Order,
   PortalAuthResponse,
   PortalSummary,
-  Product
+  Product,
+  OrderPaymentMethod
 } from "../types/domain";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -207,6 +208,7 @@ export async function deleteCustomerAddressApi(addressId: number) {
 export async function createDirectOrderApi(payload: {
   addressId?: number;
   customerNotes?: string;
+  paymentMethod: OrderPaymentMethod;
   checkoutSuccessUrl: string;
   checkoutFailureUrl: string;
   items: Array<{
@@ -245,6 +247,14 @@ export async function createOrderPaymentSessionApi(orderId: number, payload: {
 
 export async function fetchCustomerOrdersApi() {
   const response = await customerApiClient.get<CustomerOrder[]>("/customer/me/orders");
+  return response.data;
+}
+
+export async function requestOrderCancellationApi(orderId: number, reason: string) {
+  const response = await customerApiClient.post<CustomerOrder>(
+    `/customer/me/orders/${orderId}/cancellation-request`,
+    { reason }
+  );
   return response.data;
 }
 

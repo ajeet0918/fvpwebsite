@@ -1,6 +1,10 @@
 type CashfreeCheckoutOptions = {
   paymentSessionId: string;
-  redirectTarget?: "_self" | "_blank" | "_top" | "_parent" | "_modal";
+  redirectTarget?: "_self" | "_blank" | "_top" | "_parent" | "_modal" | HTMLElement;
+  appearance?: {
+    width?: string;
+    height?: string;
+  };
 };
 
 type CashfreeInstance = {
@@ -66,7 +70,10 @@ function waitForCashfreeFactory(): Promise<void> {
   });
 }
 
-export async function openCashfreeCheckout(paymentSessionId: string): Promise<void> {
+export async function openCashfreeCheckout(
+  paymentSessionId: string,
+  redirectTarget: CashfreeCheckoutOptions["redirectTarget"] = "_modal"
+): Promise<unknown> {
   if (!paymentSessionId) {
     throw new Error("Missing payment session id");
   }
@@ -77,9 +84,11 @@ export async function openCashfreeCheckout(paymentSessionId: string): Promise<vo
   }
 
   const cashfree = window.Cashfree({ mode: resolveMode() });
-  await cashfree.checkout({
+  return cashfree.checkout({
     paymentSessionId,
-    redirectTarget: "_modal"
+    redirectTarget,
+    ...(redirectTarget instanceof HTMLElement
+      ? { appearance: { width: "100%", height: "700px" } }
+      : {})
   });
 }
-

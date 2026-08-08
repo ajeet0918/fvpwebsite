@@ -1,9 +1,11 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
   createCustomerAddressApi,
   createDirectOrderApi,
   fetchCustomerAddressesApi,
+  fetchCustomerOrdersApi,
+  fetchCustomerProfileApi,
   fetchProductsApi,
   readErrorMessage
 } from "../lib/api";
@@ -12,11 +14,17 @@ import { openCashfreeCheckout } from "../lib/cashfree";
 import { isCustomerAuthenticated } from "../lib/customerAuth";
 import { resolveDocumentImageUrl } from "../lib/documents";
 import { localProductImages } from "../data/productImages";
-import type { CustomerAddress, Product } from "../types/domain";
+import type { CustomerAddress, CustomerProfile, OrderPaymentMethod, Product } from "../types/domain";
 
 type OrderCreatedState = {
   orderNumber: string;
   message: string;
+};
+
+type InlinePaymentState = {
+  orderId: number;
+  orderNumber: string;
+  paymentSessionId: string;
 };
 
 function formatCurrency(value: number | null, currency = "INR") {
@@ -41,6 +49,7 @@ function resolveFallbackImage(product: Product) {
 export function CheckoutPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
+  const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [customerNotes, setCustomerNotes] = useState("");
   const [savingOrder, setSavingOrder] = useState(false);
@@ -48,7 +57,10 @@ export function CheckoutPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [cartItems, setCartItemsState] = useState(() => getCartItems());
   const [policyAccepted, setPolicyAccepted] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<OrderPaymentMethod>("ONLINE");
   const [orderCreated, setOrderCreated] = useState<OrderCreatedState | null>(null);
+  const [inlinePayment, setInlinePayment] = useState<InlinePaymentState | null>(null);
+  const cashfreeContainerRef = useRef<HTMLDivElement | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressForm, setAddressForm] = useState({
     label: "",
@@ -95,12 +107,14 @@ export function CheckoutPage() {
     async function loadData() {
       try {
         setLoading(true);
-        const [productResponse, addressResponse] = await Promise.all([
+        const [productResponse, addressResponse, profileResponse] = await Promise.all([
           fetchProductsApi(),
-          fetchCustomerAddressesApi()
+          fetchCustomerAddressesApi(),
+          fetchCustomerProfileApi()
         ]);
         setProducts(productResponse);
         setAddresses(addressResponse);
+        setProfile(profileResponse);
         const defaultAddress = addressResponse.find((item) => item.isDefault) ?? addressResponse[0];
         setSelectedAddressId(defaultAddress ? defaultAddress.id : null);
       } catch (error) {
@@ -111,6 +125,43 @@ export function CheckoutPage() {
     }
     void loadData();
   }, []);
+
+  useEffect(() => {
+    if (!inlinePayment || !cashfreeContainerRef.current) {
+      return;
+    }
+
+    let active = true;
+    void openCashfreeCheckout(inlinePayment.paymentSessionId, cashfreeContainerRef.current)
+      .then(async () => {
+        if (!active) return;
+        try {
+          const latestOrders = await fetchCustomerOrdersApi();
+          const latestOrder = latestOrders.find((order) => order.id === inlinePayment.orderId);
+          setOrderCreated({
+            orderNumber: inlinePayment.orderNumber,
+            message: latestOrder?.paymentStatus === "PAID"
+              ? "Payment confirmed. Your order is now visible in My Orders."
+              : "Payment attempt completed. We are confirming the payment; check My Orders for the latest status."
+          });
+        } catch {
+          setOrderCreated({
+            orderNumber: inlinePayment.orderNumber,
+            message: "Payment attempt completed. Check My Orders for the latest payment status."
+          });
+        }
+        setInlinePayment(null);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setMessage(error instanceof Error ? error.message : "Unable to open secure payment.");
+        setInlinePayment(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [inlinePayment]);
 
   if (!isCustomerAuthenticated()) {
     return <Navigate to="/portal/login?next=/checkout" replace />;
@@ -138,6 +189,7 @@ export function CheckoutPage() {
       const result = await createDirectOrderApi({
         addressId: selectedAddressId,
         customerNotes,
+        paymentMethod,
         checkoutSuccessUrl: `${window.location.origin}/portal`,
         checkoutFailureUrl: `${window.location.origin}/checkout`,
         items: cartLines.map((line) => ({
@@ -150,10 +202,10 @@ export function CheckoutPage() {
       clearCart();
       setCartItemsState([]);
       if (result.paymentSessionId) {
-        await openCashfreeCheckout(result.paymentSessionId);
-        setOrderCreated({
+        setInlinePayment({
+          orderId: result.orderId,
           orderNumber: result.orderNumber,
-          message: "Your payment attempt is complete. View your orders for the confirmed payment status."
+          paymentSessionId: result.paymentSessionId
         });
         return;
       }
@@ -209,16 +261,43 @@ export function CheckoutPage() {
           <h1>Review your wholesale order</h1>
           <p>Confirm quantities and delivery details before continuing to secure payment.</p>
           <div className="checkout-steps" aria-label="Checkout progress">
-            <span className="checkout-step checkout-step-active"><strong>1</strong> Review cart</span>
-            <span className="checkout-step"><strong>2</strong> Delivery details</span>
-            <span className="checkout-step"><strong>3</strong> Payment</span>
+            <span className="checkout-step checkout-step-complete"><strong aria-hidden="true">✓</strong> Cart</span>
+            <span className="checkout-step checkout-step-complete"><strong aria-hidden="true">✓</strong> Address</span>
+            <span className="checkout-step checkout-step-active"><strong>3</strong> Payment</span>
+            <span className="checkout-step"><strong>4</strong> Place order</span>
           </div>
         </div>
 
         {message ? <p className="form-message form-message-error">{message}</p> : null}
         {loading ? <div className="checkout-loading-state">Loading your cart and delivery details...</div> : null}
 
-        {orderCreated ? (
+        {inlinePayment ? (
+          <article className="checkout-payment-stage">
+            <div className="checkout-payment-stage-header">
+              <div>
+                <span className="checkout-panel-kicker">Secure payment</span>
+                <h2>Complete payment for order {inlinePayment.orderNumber}</h2>
+                <p>Your payment is processed securely by Cashfree without leaving this checkout page.</p>
+              </div>
+              <span className="checkout-secure-badge">&#128274; Secure checkout</span>
+            </div>
+            <div className="checkout-payment-stage-layout">
+              <div className="checkout-payment-stage-summary">
+                <span className="checkout-panel-kicker">Payment summary</span>
+                <h3>Order ready for payment</h3>
+                <p>Choose UPI, cards, net banking, or another method in the secure panel.</p>
+                <div className="checkout-payment-stage-note">
+                  <strong>Do not close this page</strong>
+                  <span>We will confirm the payment and update your order automatically.</span>
+                </div>
+                <Link className="button button-secondary button-small" to="/portal">View My Orders</Link>
+              </div>
+              <div className="checkout-cashfree-inline-shell" aria-label="Cashfree secure payment">
+                <div ref={cashfreeContainerRef} id="cf_checkout" />
+              </div>
+            </div>
+          </article>
+        ) : orderCreated ? (
           <article className="checkout-success-panel">
             <span className="checkout-success-icon" aria-hidden="true">&#10003;</span>
             <div>
@@ -383,6 +462,33 @@ export function CheckoutPage() {
                 </div>
               ) : null}
 
+              <fieldset className="checkout-payment-options">
+                <legend>Payment method</legend>
+                <label className={paymentMethod === "ONLINE" ? "checkout-payment-option checkout-payment-option-active" : "checkout-payment-option"}>
+                  <input type="radio" name="paymentMethod" value="ONLINE" checked={paymentMethod === "ONLINE"} onChange={() => setPaymentMethod("ONLINE")} />
+                  <span>
+                    <strong>Pay online now</strong>
+                    <small>Secure payment through Cashfree.</small>
+                  </span>
+                </label>
+                <label className={paymentMethod === "CASH_ON_DELIVERY" ? "checkout-payment-option checkout-payment-option-active" : "checkout-payment-option"}>
+                  <input type="radio" name="paymentMethod" value="CASH_ON_DELIVERY" checked={paymentMethod === "CASH_ON_DELIVERY"} onChange={() => setPaymentMethod("CASH_ON_DELIVERY")} />
+                  <span>
+                    <strong>Cash on delivery</strong>
+                    <small>Payment is collected when your order arrives.</small>
+                  </span>
+                </label>
+                {profile?.deferredPaymentEligible ? (
+                  <label className={paymentMethod === "PAY_AFTER_DELIVERY_ONLINE" ? "checkout-payment-option checkout-payment-option-active" : "checkout-payment-option"}>
+                    <input type="radio" name="paymentMethod" value="PAY_AFTER_DELIVERY_ONLINE" checked={paymentMethod === "PAY_AFTER_DELIVERY_ONLINE"} onChange={() => setPaymentMethod("PAY_AFTER_DELIVERY_ONLINE")} />
+                    <span>
+                      <strong>Pay online after delivery</strong>
+                      <small>Available under your approved business payment terms.</small>
+                    </span>
+                  </label>
+                ) : null}
+              </fieldset>
+
               <label className="checkout-field-label">
                 Order notes <span>Optional</span>
                 <textarea
@@ -416,9 +522,17 @@ export function CheckoutPage() {
                   <span>Estimated total</span>
                   <strong>{formatCurrency(grandTotal)}</strong>
                 </div>
-                <p>Payment is completed securely through Cashfree after your order is created.</p>
+                <p>
+                  {paymentMethod === "ONLINE"
+                    ? "Payment is completed securely through Cashfree after your order is created."
+                    : paymentMethod === "CASH_ON_DELIVERY"
+                      ? "Payment is due when the order is delivered."
+                      : "Online payment becomes available after the order is delivered."}
+                </p>
                 <button type="submit" className="button button-primary" disabled={savingOrder || cartLines.length === 0}>
-                  {savingOrder ? "Creating order..." : "Place Order & Continue to Payment"}
+                  {savingOrder
+                    ? "Creating order..."
+                    : paymentMethod === "ONLINE" ? "Place Order & Continue to Payment" : "Place Order"}
                 </button>
               </div>
             </form>
