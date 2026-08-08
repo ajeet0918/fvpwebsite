@@ -3583,6 +3583,10 @@ input {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.investor-onboarding-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .tracking-timeline {
   display: grid;
   gap: 16px;

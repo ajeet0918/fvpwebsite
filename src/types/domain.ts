@@ -275,3 +275,22 @@ export type PortalSummary = {
     createdAt: string;
   }>;
 };
+
+export type PortalInvestorOnboarding = {
+  investorCode: string;
+  investorStatus: string;
+  investmentReference: string;
+  investmentStatus: string;
+  principalAmount: number;
+  monthlyReturnRate: number;
+  paymentStatus: string;
+  amountPaid: number;
+  paidAt: string | null;
+  agreements: Array<{
+    id: number;
+    agreementNumber: string;
+    status: string;
+    generatedAt: string | null;
+    downloadUrl: string | null;
+  }>;
+};
