@@ -12,6 +12,7 @@ import type {
   PortalAuthResponse,
   PortalSummary,
   Product,
+  LocalPaymentOutcome,
   OrderPaymentMethod
 } from "../types/domain";
 
@@ -254,6 +255,13 @@ export async function requestOrderCancellationApi(orderId: number, reason: strin
   const response = await customerApiClient.post<CustomerOrder>(
     `/customer/me/orders/${orderId}/cancellation-request`,
     { reason }
+  );
+  return response.data;
+}
+export async function completeLocalPaymentApi(orderId: number, outcome: LocalPaymentOutcome) {
+  const response = await customerApiClient.post<CustomerOrder>(
+    "/customer/me/orders/" + orderId + "/local-payment",
+    { outcome }
   );
   return response.data;
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   createOrderPaymentSessionApi,
+  completeLocalPaymentApi,
   createCustomerAddressApi,
   deleteCustomerAddressApi,
   fetchCustomerAddressesApi,
@@ -13,6 +14,7 @@ import {
   updateCustomerProfileApi
 } from "../lib/api";
 import { CustomerAddressBook, type CustomerAddressDraft } from "../components/customer/CustomerAddressBook";
+import { LocalPaymentPanel } from "../components/customer/LocalPaymentPanel";
 import { CustomerOrderCard } from "../components/customer/CustomerOrderCard";
 import {
   CustomerProfileSettings,
@@ -21,7 +23,7 @@ import {
 } from "../components/customer/CustomerProfileSettings";
 import { openCashfreeCheckout } from "../lib/cashfree";
 import { clearCustomerAccessToken, isCustomerAuthenticated } from "../lib/customerAuth";
-import type { CustomerAddress, CustomerOrder, CustomerProfile } from "../types/domain";
+import type { CustomerAddress, CustomerOrder, CustomerProfile, LocalPaymentOutcome } from "../types/domain";
 
 type PortalView = "overview" | "orders" | "addresses" | "profile";
 
@@ -67,6 +69,11 @@ export function PortalDashboardPage() {
   const [savingPreference, setSavingPreference] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
   const [retryingOrderId, setRetryingOrderId] = useState<number | null>(null);
+  const [localPaymentSession, setLocalPaymentSession] = useState<{
+    orderId: number;
+    orderNumber: string;
+  } | null>(null);
+  const [completingLocalPayment, setCompletingLocalPayment] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
 
   const paidOrders = useMemo(
@@ -182,6 +189,13 @@ export function PortalDashboardPage() {
         checkoutSuccessUrl: `${window.location.origin}/portal/orders`,
         checkoutFailureUrl: `${window.location.origin}/portal/orders`
       });
+      if (session.paymentProvider === "LOCAL_TEST" && session.paymentSessionId) {
+        setLocalPaymentSession({
+          orderId,
+          orderNumber: session.orderNumber
+        });
+        return;
+      }
       if (session.paymentSessionId) {
         await openCashfreeCheckout(session.paymentSessionId);
         setOrders(await fetchCustomerOrdersApi());
@@ -206,7 +220,28 @@ export function PortalDashboardPage() {
       setRetryingOrderId(null);
     }
   }
+  async function handleLocalPaymentOutcome(outcome: LocalPaymentOutcome) {
+    if (!localPaymentSession) {
+      return;
+    }
+    setCompletingLocalPayment(true);
+    clearMessages();
+    try {
+      const updatedOrder = await completeLocalPaymentApi(localPaymentSession.orderId, outcome);
+      setOrders((current) => current.map((order) => order.id === updatedOrder.id ? updatedOrder : order));
+      setNotice(
+        outcome === "SUCCESS"
+          ? "Payment confirmed. The order is now marked paid."
+          : "The test payment failed. You can retry it again."
+      );
+      setLocalPaymentSession(null);
+    } catch (errorValue) {
+      setError(readErrorMessage(errorValue, "Unable to update the local payment result."));
+    } finally {
+      setCompletingLocalPayment(false);
+    }
 
+  }
   async function handleRequestCancellation(orderId: number) {
     const reason = window.prompt("Tell us why you want to cancel this order:");
     if (!reason || reason.trim().length < 5) {
@@ -272,6 +307,20 @@ export function PortalDashboardPage() {
             <div className="portal-account-main">
               {error ? <p className="form-message form-message-error" role="alert">{error}</p> : null}
               {notice ? <p className="form-message form-message-success" role="status">{notice}</p> : null}
+              {localPaymentSession ? (
+                <section className="portal-local-payment-stage">
+                  <div>
+                    <span className="checkout-panel-kicker">Payment retry</span>
+                    <h2>Complete payment for order {localPaymentSession.orderNumber}</h2>
+                  </div>
+                  <LocalPaymentPanel
+                    orderNumber={localPaymentSession.orderNumber}
+                    busy={completingLocalPayment}
+                    onOutcome={handleLocalPaymentOutcome}
+                    onCancel={() => setLocalPaymentSession(null)}
+                  />
+                </section>
+              ) : null}
 
               {activeView === "overview" ? (
                 <OverviewView

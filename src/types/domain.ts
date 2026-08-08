@@ -37,6 +37,7 @@ export type OrderPaymentMethod =
   | "PAY_AFTER_DELIVERY_ONLINE"
   | "CASH"
   | "BANK_TRANSFER";
+export type LocalPaymentOutcome = "SUCCESS" | "FAILURE";
 
 export type OrderCancellationStatus = "NONE" | "REQUESTED" | "APPROVED" | "REJECTED";
 

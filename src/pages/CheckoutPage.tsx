@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
   createCustomerAddressApi,
+  completeLocalPaymentApi,
   createDirectOrderApi,
   fetchCustomerAddressesApi,
   fetchCustomerOrdersApi,
@@ -14,6 +15,7 @@ import { openCashfreeCheckout } from "../lib/cashfree";
 import { isCustomerAuthenticated } from "../lib/customerAuth";
 import { resolveDocumentImageUrl } from "../lib/documents";
 import { localProductImages } from "../data/productImages";
+import { LocalPaymentPanel } from "../components/customer/LocalPaymentPanel";
 import type { CustomerAddress, CustomerProfile, OrderPaymentMethod, Product } from "../types/domain";
 
 type OrderCreatedState = {
@@ -24,6 +26,7 @@ type OrderCreatedState = {
 type InlinePaymentState = {
   orderId: number;
   orderNumber: string;
+  paymentProvider: string;
   paymentSessionId: string;
 };
 
@@ -59,6 +62,7 @@ export function CheckoutPage() {
   const [policyAccepted, setPolicyAccepted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<OrderPaymentMethod>("ONLINE");
   const [orderCreated, setOrderCreated] = useState<OrderCreatedState | null>(null);
+  const [completingLocalPayment, setCompletingLocalPayment] = useState(false);
   const [inlinePayment, setInlinePayment] = useState<InlinePaymentState | null>(null);
   const cashfreeContainerRef = useRef<HTMLDivElement | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -127,7 +131,7 @@ export function CheckoutPage() {
   }, []);
 
   useEffect(() => {
-    if (!inlinePayment || !cashfreeContainerRef.current) {
+    if (!inlinePayment || inlinePayment.paymentProvider === "LOCAL_TEST" || !cashfreeContainerRef.current) {
       return;
     }
 
@@ -163,6 +167,27 @@ export function CheckoutPage() {
     };
   }, [inlinePayment]);
 
+  async function handleLocalPaymentOutcome(outcome: "SUCCESS" | "FAILURE") {
+    if (!inlinePayment) {
+      return;
+    }
+    setCompletingLocalPayment(true);
+    setMessage(null);
+    try {
+      const updatedOrder = await completeLocalPaymentApi(inlinePayment.orderId, outcome);
+      setOrderCreated({
+        orderNumber: updatedOrder.orderNumber,
+        message: outcome === "SUCCESS"
+          ? "Payment confirmed. Your order is now visible in My Orders."
+          : "The test payment failed. You can retry it from My Orders."
+      });
+      setInlinePayment(null);
+    } catch (error) {
+      setMessage(readErrorMessage(error, "Unable to update the local payment result."));
+    } finally {
+      setCompletingLocalPayment(false);
+    }
+  }
   if (!isCustomerAuthenticated()) {
     return <Navigate to="/portal/login?next=/checkout" replace />;
   }
@@ -205,7 +230,8 @@ export function CheckoutPage() {
         setInlinePayment({
           orderId: result.orderId,
           orderNumber: result.orderNumber,
-          paymentSessionId: result.paymentSessionId
+          paymentSessionId: result.paymentSessionId,
+          paymentProvider: result.paymentProvider,
         });
         return;
       }
@@ -277,7 +303,7 @@ export function CheckoutPage() {
               <div>
                 <span className="checkout-panel-kicker">Secure payment</span>
                 <h2>Complete payment for order {inlinePayment.orderNumber}</h2>
-                <p>Your payment is processed securely by Cashfree without leaving this checkout page.</p>
+                <p>{inlinePayment.paymentProvider === "LOCAL_TEST" ? "Use the local test controls below to complete the payment lifecycle." : "Your payment is processed securely by Cashfree without leaving this checkout page."}</p>
               </div>
               <span className="checkout-secure-badge">&#128274; Secure checkout</span>
             </div>
@@ -285,16 +311,25 @@ export function CheckoutPage() {
               <div className="checkout-payment-stage-summary">
                 <span className="checkout-panel-kicker">Payment summary</span>
                 <h3>Order ready for payment</h3>
-                <p>Choose UPI, cards, net banking, or another method in the secure panel.</p>
+                <p>{inlinePayment.paymentProvider === "LOCAL_TEST" ? "Choose success or failure to verify how the order status changes in your local database." : "Choose UPI, cards, net banking, or another method in the secure panel."}</p>
                 <div className="checkout-payment-stage-note">
                   <strong>Do not close this page</strong>
                   <span>We will confirm the payment and update your order automatically.</span>
                 </div>
                 <Link className="button button-secondary button-small" to="/portal">View My Orders</Link>
               </div>
-              <div className="checkout-cashfree-inline-shell" aria-label="Cashfree secure payment">
-                <div ref={cashfreeContainerRef} id="cf_checkout" />
-              </div>
+              {inlinePayment.paymentProvider === "LOCAL_TEST" ? (
+                <LocalPaymentPanel
+                  orderNumber={inlinePayment.orderNumber}
+                  busy={completingLocalPayment}
+                  onOutcome={handleLocalPaymentOutcome}
+                  onCancel={() => setInlinePayment(null)}
+                />
+              ) : (
+                <div className="checkout-cashfree-inline-shell" aria-label="Cashfree secure payment">
+                  <div ref={cashfreeContainerRef} id="cf_checkout" />
+                </div>
+              )}
             </div>
           </article>
         ) : orderCreated ? (
