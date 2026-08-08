@@ -10,6 +10,7 @@ import type {
   InquirySubmissionResponse,
   Order,
   PortalAuthResponse,
+  PortalInvestorOnboarding,
   PortalSummary,
   Product,
   OrderPaymentMethod
@@ -135,6 +136,19 @@ export async function changePortalPasswordApi(payload: { password: string }) {
 
 export async function fetchPortalSummaryApi() {
   const response = await portalApiClient.get<PortalSummary>("/portal/summary");
+  return response.data;
+}
+
+export async function fetchPortalInvestorOnboardingApi() {
+  const response = await portalApiClient.get<PortalInvestorOnboarding>("/portal/investor/onboarding");
+  return response.data;
+}
+
+export async function downloadPortalInvestorAgreementApi(agreementId: number) {
+  const response = await portalApiClient.get<Blob>(
+    `/portal/investor/agreements/${agreementId}/download`,
+    { responseType: "blob" }
+  );
   return response.data;
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { InvestorAgreementPanel } from "../components/InvestorAgreementPanel";
 import { fetchPortalSummaryApi, readErrorMessage } from "../lib/api";
 import { clearPortalAccessToken, isPortalAuthenticated, isPortalPasswordResetRequired } from "../lib/portalAuth";
 import type { PortalSummary } from "../types/domain";
@@ -121,6 +122,8 @@ export function PartnerDashboardPage() {
                 {summary.farmers.length === 0 ? <p>No farmer registration linked yet.</p> : null}
               </article>
             </div>
+
+            {summary.investors.length > 0 ? <InvestorAgreementPanel /> : null}
 
             <article className="tracking-panel portal-panel">
               <h3>Monthly Returns</h3>

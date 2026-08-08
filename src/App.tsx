@@ -7,6 +7,7 @@ import { OrderInvoicePage } from "./pages/OrderInvoicePage";
 import { PartnerActivatePage } from "./pages/PartnerActivatePage";
 import { PartnerDashboardPage } from "./pages/PartnerDashboardPage";
 import { PartnerLoginPage } from "./pages/PartnerLoginPage";
+import { InvestorPaymentReturnPage } from "./pages/InvestorPaymentReturnPage";
 import { PartnerResetPasswordPage } from "./pages/PartnerResetPasswordPage";
 import { PoliciesPage } from "./pages/PoliciesPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/portal/login" element={<PortalLoginPage />} />
         <Route path="/portal/*" element={<PortalDashboardPage />} />
         <Route path="/partner/login" element={<PartnerLoginPage />} />
+        <Route path="/partner/payment-complete" element={<InvestorPaymentReturnPage />} />
         <Route path="/partner/activate" element={<PartnerActivatePage />} />
         <Route path="/partner/reset-password" element={<PartnerResetPasswordPage />} />
         <Route path="/partner" element={<PartnerDashboardPage />} />
