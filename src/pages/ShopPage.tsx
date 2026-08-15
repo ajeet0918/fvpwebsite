@@ -110,10 +110,18 @@ export function ShopPage() {
         <div className="section-heading section-heading-left">
           <span className="section-badge">Shop</span>
           <h2>Product Catalog</h2>
-          <p>Browse real catalog products, review details, and proceed to order flow.</p>
+          <p>Browse products, compare the essentials, and add what you need to a single order request.</p>
         </div>
 
-        <div className="shop-filters">
+        <div className="shop-toolbar">
+          <div className="shop-filter-copy">
+            <strong>{loading ? "Loading catalog" : `${filteredProducts.length} product${filteredProducts.length === 1 ? "" : "s"} available`}</strong>
+            <span>{activeCategory ? `Showing ${searchParams.get("category")}` : "Choose a category to narrow the catalog."}</span>
+          </div>
+          {activeCategory ? <button type="button" className="shop-clear-filter" onClick={() => setCategoryFilter("")}>Clear filter</button> : null}
+        </div>
+
+        <div className="shop-filters" aria-label="Filter products by category">
           <button
             type="button"
             className={activeCategory ? "shop-chip" : "shop-chip shop-chip-active"}
@@ -134,8 +142,9 @@ export function ShopPage() {
         </div>
 
         {error ? <div className="banner-error">{error}</div> : null}
-        {cartMessage ? <p className="form-message">{cartMessage}</p> : null}
-        {loading ? <p>Loading catalog...</p> : null}
+        <p className="sr-only" aria-live="polite">{cartMessage ?? ""}</p>
+        {cartMessage ? <p className="form-message shop-status-message">{cartMessage}</p> : null}
+        {loading ? <div className="catalog-loading" role="status"><span className="catalog-loading-mark" aria-hidden="true" /> Loading catalog...</div> : null}
 
         <div className="product-grid">
           {filteredProducts.map((product, index) => {
@@ -183,9 +192,19 @@ export function ShopPage() {
           })}
         </div>
 
-        {!loading && filteredProducts.length === 0 ? <p>No products found for this category.</p> : null}
-        <div className="home-shop-cta">
-          <Link className="button button-primary" to="/checkout">Go To Checkout</Link>
+        {!loading && filteredProducts.length === 0 ? (
+          <div className="catalog-empty">
+            <strong>No products match this category yet.</strong>
+            <p>Try another category or view the complete catalog.</p>
+            <button type="button" className="button button-secondary" onClick={() => setCategoryFilter("")}>View all products</button>
+          </div>
+        ) : null}
+        <div className="shop-checkout-bar">
+          <div>
+            <strong>{cartItems.reduce((total, item) => total + item.quantity, 0)} item{cartItems.reduce((total, item) => total + item.quantity, 0) === 1 ? "" : "s"} in your cart</strong>
+            <span>Review quantities before proceeding to checkout.</span>
+          </div>
+          <Link className="button button-primary" to="/checkout">Review Cart</Link>
         </div>
       </div>
     </section>

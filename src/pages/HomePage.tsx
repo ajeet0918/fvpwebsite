@@ -12,6 +12,12 @@ const serviceCards = [
   ["Food Products", "Wholesale grains, pulses, spices, and selected processed food items."]
 ] as const;
 
+const trustPoints = [
+  ["Quality-led sourcing", "Products selected for dependable wholesale supply."],
+  ["Built for bulk", "Clear catalog discovery and order-request journeys."],
+  ["Human support", "A team ready to help with the next business step."]
+] as const;
+
 const staticProductCards: Product[] = [
   {
     id: 1,
@@ -152,6 +158,7 @@ export function HomePage() {
         <div className="container hero-content">
           <div className="hero-grid">
             <div className="hero-copy">
+              <span className="eyebrow">Wholesale agriculture, made clearer</span>
               <h1>
                 Premium Wholesale
                 <span>Agricultural Products</span>
@@ -162,6 +169,15 @@ export function HomePage() {
               </p>
               <div className="hero-actions hero-actions-uniform">
                 <Link className="button button-primary button-large hero-cta" to="/shop">Shop Catalog</Link>
+                <Link className="button button-outline-light button-large hero-cta" to="/join-us">Become a Partner</Link>
+              </div>
+              <div className="hero-trust-row" aria-label="How FVP Purepick helps businesses">
+                {trustPoints.map(([title, description]) => (
+                  <div className="hero-trust-item" key={title}>
+                    <strong>{title}</strong>
+                    <span>{description}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -170,11 +186,13 @@ export function HomePage() {
               <div className="hero-panel-card">
                 <img src="/assets/hero-card.jpg" alt="Fresh Produce" />
                 <div className="hero-panel-copy">
-                    <h3>Public Experience</h3>
+                    <span className="hero-panel-label">One connected journey</span>
+                    <h3>Source. Order. Grow.</h3>
+                    <p>Find the right products first, then move smoothly from enquiry to delivery support.</p>
                     <div className="hero-panel-list">
-                    {["Catalog browsing", "Investor and farmer intake", "Order request and account history", "Marketing and contact pages"].map((item) => (
+                    {["Explore products by category", "Request support for wholesale needs", "Manage orders from your account"].map((item, index) => (
                       <div key={item} className="hero-panel-item">
-                        <span className="hero-panel-bullet">-</span>
+                        <span className="hero-panel-bullet">0{index + 1}</span>
                         <span>{item}</span>
                       </div>
                     ))}
@@ -206,6 +224,10 @@ export function HomePage() {
                     <span className="product-category">{product.category}</span>
                     <h3>{product.name}</h3>
                     <p>{product.shortDescription}</p>
+                    <div className="product-card-footer">
+                      <span>Wholesale supply</span>
+                      <span aria-hidden="true">→</span>
+                    </div>
                   </div>
                 </article>
               </Link>
@@ -279,21 +301,24 @@ export function HomePage() {
             <h2>Investor, Farmer, and Collection Hub Programs</h2>
             <p>Choose the journey that fits your role in the FVP Purepick ecosystem.</p>
           </div>
-          <div className="service-grid">
-            <article className="service-card">
+          <div className="program-grid">
+            <article className="program-card">
+              <span className="program-number">01</span>
               <h3>Investor Intake</h3>
               <p>Register investment intent and KYC details first; payment is handled after verification.</p>
-              <p><Link to="/join-us?type=investor">Open investor form</Link></p>
+              <Link className="program-link" to="/join-us?type=investor">Explore investor program <span aria-hidden="true">→</span></Link>
             </article>
-            <article className="service-card">
+            <article className="program-card">
+              <span className="program-number">02</span>
               <h3>Farmer Onboarding</h3>
               <p>Share farm profile, crop details, and required documents for partner onboarding.</p>
-              <p><Link to="/join-us?type=farmer">Open farmer form</Link></p>
+              <Link className="program-link" to="/join-us?type=farmer">Explore farmer program <span aria-hidden="true">→</span></Link>
             </article>
-            <article className="service-card">
+            <article className="program-card">
+              <span className="program-number">03</span>
               <h3>Collection Hub Setup</h3>
               <p>Open a local collection point and onboard for procurement, grading, and dispatch coordination.</p>
-              <p><Link to="/join-us?type=collection-hub">Open collection hub form</Link></p>
+              <Link className="program-link" to="/join-us?type=collection-hub">Explore hub program <span aria-hidden="true">→</span></Link>
             </article>
           </div>
         </div>
