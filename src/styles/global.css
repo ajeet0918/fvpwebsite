@@ -10,13 +10,13 @@
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   /* FVP Purepick brand palette: update these tokens first for future rebranding. */
-  --brand-primary: #15803d;
-  --brand-secondary: #22c55e;
-  --brand-ink: #0f172a;
-  --brand-soft: #f0fdf4;
+  --brand-primary: #147a46;
+  --brand-secondary: #22a85b;
+  --brand-ink: #12251a;
+  --brand-soft: #f3faf5;
   --brand-accent: #f59e0b;
   --green-700: var(--brand-primary);
-  --green-600: #16a34a;
+  --green-600: #16864a;
   --green-500: var(--brand-secondary);
   --green-200: #bbf7d0;
   --green-100: #dcfce7;
@@ -42,7 +42,7 @@ body,
 
 body {
   min-width: 320px;
-  background: #ffffff;
+  background: #fbfdfb;
   color: var(--slate-900);
 }
 
@@ -57,15 +57,22 @@ a {
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
+}
+
+::selection {
+  background: rgba(34, 168, 91, 0.22);
+  color: var(--brand-ink);
 }
 
 .site-shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #ffffff;
+  background: #fbfdfb;
 }
 
 .site-main {
@@ -78,7 +85,7 @@ input {
 }
 
 .container {
-  width: min(1120px, calc(100% - 32px));
+  width: min(1180px, calc(100% - 40px));
   margin: 0 auto;
 }
 
@@ -86,7 +93,7 @@ input {
   position: fixed;
   inset: 0 0 auto;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   transition: box-shadow 0.3s ease, background-color 0.3s ease;
 }
@@ -101,7 +108,7 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 80px;
+  min-height: 76px;
 }
 
 .brand {
@@ -116,7 +123,7 @@ input {
   height: 48px;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: 16px;
   background: linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));
   color: #ffffff;
   font-size: 1.1rem;
@@ -143,7 +150,7 @@ input {
 
 .brand-name {
   color: #111827;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
 }
 
@@ -160,7 +167,7 @@ input {
 }
 
 .nav-links {
-  gap: 32px;
+  gap: clamp(18px, 2.3vw, 32px);
 }
 
 .nav-actions {
@@ -170,7 +177,8 @@ input {
 .nav-link {
   position: relative;
   color: var(--slate-700);
-  font-weight: 500;
+  font-size: 0.94rem;
+  font-weight: 650;
   transition: color 0.2s ease;
 }
 
@@ -241,17 +249,52 @@ input {
   justify-content: center;
   min-height: 46px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 14px 28px;
   line-height: 1.2;
   text-align: center;
-  font-weight: 700;
+  font-weight: 750;
+  letter-spacing: -0.01em;
   transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease;
   cursor: pointer;
 }
 
 .button:hover {
   transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+  box-shadow: none;
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid rgba(22, 134, 74, 0.28);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 100;
+  transform: translate(-50%, -180%);
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: var(--brand-ink);
+  color: #ffffff;
+  font-weight: 750;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translate(-50%, 0);
 }
 
 .button-small {
@@ -4333,5 +4376,238 @@ input {
 
   .page-top {
     padding-top: 124px;
+  }
+}
+
+/* Shared experience refinements: these apply to every public route. */
+.menu-toggle {
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--slate-200);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--brand-ink);
+}
+
+.menu-toggle:hover {
+  border-color: var(--green-200);
+  background: var(--green-50);
+}
+
+.menu-toggle-icon,
+.menu-toggle-icon::before,
+.menu-toggle-icon::after {
+  display: block;
+  width: 19px;
+  height: 2px;
+  border-radius: 99px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-toggle-icon {
+  position: relative;
+}
+
+.menu-toggle-icon::before,
+.menu-toggle-icon::after {
+  position: absolute;
+  left: 0;
+  content: "";
+}
+
+.menu-toggle-icon::before {
+  top: -6px;
+}
+
+.menu-toggle-icon::after {
+  top: 6px;
+}
+
+.menu-toggle-icon-open {
+  background: transparent;
+}
+
+.menu-toggle-icon-open::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.menu-toggle-icon-open::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+.mobile-menu {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mobile-menu-open {
+  visibility: visible;
+  pointer-events: auto;
+  box-shadow: 0 18px 30px rgba(15, 23, 42, 0.08);
+}
+
+.mobile-link {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.mobile-link:hover,
+.mobile-link.nav-link-active {
+  background: var(--green-50);
+}
+
+.product-card,
+.feature-card,
+.service-card,
+.about-card,
+.product-detail-card,
+.order-form,
+.lead-form,
+.tracking-panel,
+.portal-panel,
+.portal-order-card,
+.invoice-sheet,
+.policy-card,
+.policy-section {
+  border-color: rgba(15, 78, 45, 0.12);
+}
+
+.product-card,
+.feature-card,
+.service-card,
+.about-card {
+  box-shadow: 0 14px 34px rgba(15, 49, 32, 0.07);
+}
+
+.product-card:hover,
+.feature-card:hover,
+.service-card:hover,
+.about-card:hover {
+  box-shadow: 0 24px 52px rgba(15, 78, 45, 0.13);
+}
+
+.product-body {
+  padding: 26px;
+}
+
+.product-card-price {
+  margin-top: 22px;
+  border-color: rgba(22, 134, 74, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.shop-card-actions {
+  margin-top: auto;
+}
+
+.section-heading p,
+.hero-lead,
+.product-body p,
+.feature-card p,
+.service-card p {
+  line-height: 1.65;
+}
+
+.section-badge {
+  border: 1px solid rgba(22, 134, 74, 0.16);
+  padding: 8px 13px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.order-form input,
+.order-form textarea,
+.order-form select,
+.lead-form input,
+.lead-form textarea,
+.auth-form input,
+.auth-reset-form input,
+.portal-form input,
+.portal-form textarea,
+.portal-form select {
+  border-color: var(--slate-300);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+.order-form input:focus,
+.order-form textarea:focus,
+.order-form select:focus,
+.lead-form input:focus,
+.lead-form textarea:focus,
+.auth-form input:focus,
+.auth-reset-form input:focus,
+.portal-form input:focus,
+.portal-form textarea:focus,
+.portal-form select:focus {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 4px rgba(22, 134, 74, 0.11);
+}
+
+.checkout-payment-option,
+.join-type-card,
+.portal-summary-card,
+.portal-account-nav-link {
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.checkout-payment-option:hover,
+.join-type-card:hover,
+.portal-summary-card:hover {
+  border-color: rgba(22, 134, 74, 0.4);
+  box-shadow: 0 10px 24px rgba(15, 78, 45, 0.08);
+}
+
+.checkout-payment-option:has(input:focus-visible),
+.join-type-card:has(button:focus-visible) {
+  outline: 3px solid rgba(22, 134, 74, 0.23);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .navbar-row {
+    min-height: 68px;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.68rem;
+  }
+
+  .product-body {
+    padding: 20px;
+  }
+
+  .product-card-price {
+    margin-top: 18px;
   }
 }

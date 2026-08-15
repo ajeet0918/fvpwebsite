@@ -158,6 +158,7 @@ export function PublicLayout() {
 
   return (
     <div className="site-shell">
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
         <div className="container">
           <div className="navbar-row">
@@ -202,14 +203,20 @@ export function PublicLayout() {
             <button
               type="button"
               className="menu-toggle"
-              aria-label="Toggle menu"
+              aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-controls="mobile-navigation"
+              aria-expanded={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen((open) => !open)}
             >
-              {isMobileMenuOpen ? "X" : "="}
+              <span className={`menu-toggle-icon ${isMobileMenuOpen ? "menu-toggle-icon-open" : ""}`} aria-hidden="true" />
             </button>
           </div>
         </div>
-        <div className={`mobile-menu ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}>
+        <div
+          id="mobile-navigation"
+          className={`mobile-menu ${isMobileMenuOpen ? "mobile-menu-open" : ""}`}
+          aria-hidden={!isMobileMenuOpen}
+        >
           <div className="container mobile-menu-inner">
             {navLinks.map((link) => (
               link.type === "route"
@@ -219,6 +226,7 @@ export function PublicLayout() {
                     to={link.path}
                     end={link.path === "/"}
                     className={activeKey === link.key ? "mobile-link nav-link-active" : "mobile-link"}
+                    tabIndex={isMobileMenuOpen ? 0 : -1}
                     onClick={link.key === "home" ? handleHomeClick : () => setIsMobileMenuOpen(false)}
                   >
                     {link.name}
@@ -230,6 +238,7 @@ export function PublicLayout() {
                     key={link.key}
                     href={link.path}
                     className={activeKey === link.key ? "mobile-link nav-link-active" : "mobile-link"}
+                    tabIndex={isMobileMenuOpen ? 0 : -1}
                     onClick={(event) => handleSectionClick(event, link.sectionId)}
                   >
                     {link.name}
@@ -240,7 +249,7 @@ export function PublicLayout() {
         </div>
       </nav>
 
-      <main className={compactFooter ? "site-main site-main-workflow" : "site-main"}>
+      <main id="main-content" className={compactFooter ? "site-main site-main-workflow" : "site-main"}>
         <Outlet />
       </main>
       <SiteFooter compact={compactFooter} />
