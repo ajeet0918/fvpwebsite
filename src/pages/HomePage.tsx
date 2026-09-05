@@ -218,7 +218,7 @@ export function HomePage() {
         <div className="container">
           <div className="section-heading">
             <span className="section-badge">About Us</span>
-            <h2>Why Choose FVP Pure Pick Suppliers OPC Pvt. Ltd.?</h2>
+            <h2>Why Choose FVP Pure Pick Suppliers Pvt. Ltd.?</h2>
             <p>
               We deliver premium, reliable, and diverse agricultural products at wholesale prices with a
               customer-first approach.

@@ -6,7 +6,7 @@ export type PolicyLink = {
 };
 
 export const companyLegalDetails = {
-  legalName: "FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED",
+  legalName: "FVP PUREPICK SUPPLIERS PRIVATE LIMITED",
   address: "Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar Pradesh - 201318",
   email: "care@fvppurepick.com"
 } as const;
