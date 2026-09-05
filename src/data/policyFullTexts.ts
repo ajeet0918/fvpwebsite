@@ -1,28 +1,28 @@
 export const policyFullTexts: Record<string, string> = {
-  'return-refund': `FVP PUREPICK SUPPLIERS (OPC)
+  'return-refund': `FVP PUREPICK SUPPLIERS
 PRIVATE LIMITED
 RETURN, REFUND & REPLACEMENT
 POLICY
 Part 1 - General Terms & Business Policy
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 This Return, Refund & Replacement Policy ("Policy") governs every purchase, order, quotation,
 invoice, sale, shipment, delivery, replacement, cancellation, refund, and after-sales claim
-relating to products supplied by FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+relating to products supplied by FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 through its website, mobile platforms, WhatsApp, email, telephone, authorized representatives,
 distributors, dealers, business partners, marketplaces, and offline business operations.
 This Policy forms an integral part of every sale made by the Company unless otherwise agreed
 in writing through a separate contract signed by authorized representatives of both parties.
-By placing an order with FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED, every
+By placing an order with FVP PUREPICK SUPPLIERS PRIVATE LIMITED, every
 customer acknowledges that they have carefully read, understood, and accepted this Policy in
 its entirety.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the trading, wholesale
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the trading, wholesale
 supply, marketing, procurement, storage, distribution, import and export of agricultural products,
 vegetables, food products and related commodities, consistent with its registered business
 objects.
-The Company is registered under GST as FVP PUREPICK SUPPLIERS (OPC) PRIVATE
+The Company is registered under GST as FVP PUREPICK SUPPLIERS PRIVATE
 LIMITED with its principal place of business at Office No. 14122, 14th Floor, Gaur City Mall,
 Greater Noida West, Gautam Buddha Nagar, Uttar Pradesh, and also holds MSME (Udyam)
 registration as a Micro Enterprise engaged in trading activities.
@@ -177,7 +177,7 @@ Official communication may be made through:
 - Official letters
 Only communications issued through authorized Company channels shall be considered valid.
 15. Changes to this Policy
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED reserves the right to amend, modify,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED reserves the right to amend, modify,
 update, or replace this Policy at any time to reflect changes in business practices, legal
 requirements, operational needs, or market conditions.
 The latest version published on the Company's official website shall apply to future orders
@@ -361,7 +361,7 @@ Both parties agree to cooperate in good faith to resolve genuine disputes effici
 The Company encourages customers to communicate promptly and provide accurate
 information to facilitate a fair resolution.
 36. Bulk Order Policy
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED primarily operates as a
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED primarily operates as a
 Business-to-Business (B2B) wholesale supplier. Customers placing bulk orders
 acknowledge that commercial transactions differ from retail purchases and involve procurement,
 grading, packing, logistics, and supply-chain planning.
@@ -548,7 +548,7 @@ executed written agreement, constitutes the entire understanding between the Com
 the customer regarding returns, refunds, and replacements.
 58. Contact for Claims
 For all return, replacement, or refund requests, customers should contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Customers should include:
 - Order Number
@@ -557,14 +557,14 @@ Customers should include:
 - Photographs and/or videos
 - Contact details
 to facilitate timely review.
-FVP PUREPICK SUPPLIERS (OPC)
+FVP PUREPICK SUPPLIERS
 PRIVATE LIMITED
 RETURN, REFUND & REPLACEMENT
 POLICY
 Part 5 - Final Legal Provisions, Customer
 Acknowledgement & Contact Information
 81. Customer Acknowledgement
-By placing an order with FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED, the customer
+By placing an order with FVP PUREPICK SUPPLIERS PRIVATE LIMITED, the customer
 confirms and agrees that:
 - They have carefully read this Return, Refund & Replacement Policy.
 - They understand the commercial nature of wholesale agricultural transactions.
@@ -621,7 +621,7 @@ returns, refunds, and replacements.
 90. Contact Information
 For any questions, complaints, or requests related to returns, refunds, or replacements, please
 contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Registered / Principal Business Address:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
 Pradesh - 201318.
@@ -635,7 +635,7 @@ Customers should provide:
 - Contact Details
 to help the Company process the request efficiently.
 91. Customer Declaration
-By purchasing products from FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED, the
+By purchasing products from FVP PUREPICK SUPPLIERS PRIVATE LIMITED, the
 customer declares that they:
 - Have the authority to enter into a commercial transaction.
 - Have independently evaluated the products for their intended business use.
@@ -643,16 +643,16 @@ customer declares that they:
 - Will store and handle the products appropriately after delivery.
 - Will submit any eligible claim honestly and within the time limits specified in this Policy.
 92. Final Statement
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is committed to maintaining
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is committed to maintaining
 transparent, ethical, and professional business relationships with all customers. We strive to
 deliver quality products and resolve genuine concerns fairly and efficiently while recognizing the
 unique nature of wholesale agricultural trade.
 This Policy is intended to create clarity, reduce misunderstandings, and support long-term
 business relationships based on trust, cooperation, and mutual respect.`,
   'terms': `TERMS & CONDITIONS
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Us", or "Our").
 These Terms & Conditions ("Terms") govern your access to and use of our website, products,
 services, quotations, purchase orders, invoices, digital platforms, mobile applications (if any),
@@ -662,7 +662,7 @@ By accessing our website or purchasing any product or service from us, you agree
 bound by these Terms. If you do not agree with any provision of these Terms, you should not
 use our website or place an order.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in wholesale trading,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in wholesale trading,
 procurement, marketing, distribution, storage, import, export and supply of agricultural
 commodities, vegetables, food products and related goods in accordance with its registered
 business objects.
@@ -670,7 +670,7 @@ The Company is registered under GST and operates as a Micro Enterprise under the
 Registration framework.
 3. Definitions
 For the purpose of these Terms:
-- Company means FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED.
+- Company means FVP PUREPICK SUPPLIERS PRIVATE LIMITED.
 - Customer means any individual, business, dealer, distributor, exporter, importer,
 institution or entity purchasing or enquiring about products or services.
 - Website means the official website of the Company.
@@ -1126,15 +1126,15 @@ executed written agreement, constitute the entire agreement between the Company 
 customer regarding the use of the website and commercial transactions.
 58. Contact Information
 For any questions regarding these Terms & Conditions, customers may contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Principal Business Address:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
 Pradesh - 201318.`,
   'privacy': `PRIVACY POLICY
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Us", or "Our").
 Your privacy is important to us. This Privacy Policy explains how we collect, use, store, disclose,
 protect, and process your personal information when you visit our website, contact us, request
@@ -1142,7 +1142,7 @@ quotations, purchase products, or otherwise interact with our services.
 By accessing our website or using our services, you acknowledge that you have read and
 understood this Privacy Policy.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the wholesale trading,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the wholesale trading,
 procurement, marketing, distribution, storage, and supply of agricultural products and related
 goods. The Company is registered under GST and operates as a Micro Enterprise under the
 Udyam Registration framework.
@@ -1375,7 +1375,7 @@ The latest version published on the Company's website will apply from its stated
 23. Contact Us
 If you have questions regarding this Privacy Policy or wish to exercise any applicable privacy
 rights, please contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Registered / Principal Business Address:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -1395,9 +1395,9 @@ This Privacy Policy should be read together with the Company's:
 In the event of any inconsistency, the document most specifically applicable to the
 relevant issue shall prevail, unless otherwise required by law.`,
   'shipping-delivery': `SHIPPING & DELIVERY POLICY
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 This Shipping & Delivery Policy explains how we process, pack, dispatch, transport, and deliver
 wholesale agricultural products purchased through our website, email, WhatsApp, telephone,
@@ -1405,7 +1405,7 @@ authorized sales representatives, distributors, or any other official sales chan
 By placing an order with us, you acknowledge that you have read, understood, and agreed to
 this Shipping & Delivery Policy.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the wholesale trading,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the wholesale trading,
 procurement, storage, distribution, import, export, and supply of agricultural commodities and
 food products in accordance with its registered business activities.
 The Company operates from its principal place of business at Office No. 14122, 14th Floor,
@@ -1542,7 +1542,7 @@ reasonable control, including but not limited to:
 - Cyber incidents affecting operations
 19. Contact Information
 For shipping or delivery-related queries, please contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Principal Business Address:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -1551,9 +1551,9 @@ Pradesh - 201318.
 The Company reserves the right to update or amend this Shipping & Delivery Policy at any time.
 The latest version published on the Company's official website shall apply to future orders.`,
   'cancellation': `CANCELLATION POLICY
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 This Cancellation Policy explains the terms and conditions governing the cancellation of orders
 placed through our website, email, WhatsApp, telephone, authorized representatives,
@@ -1564,7 +1564,7 @@ confirmation. Therefore, cancellation rights are limited compared to retail cons
 By placing an order with us, you acknowledge that you have read, understood, and agreed to
 this Cancellation Policy.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the wholesale trading,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the wholesale trading,
 procurement, storage, marketing, distribution, import, export, and supply of agricultural
 commodities, vegetables, food products, and related goods in accordance with its registered
 business objects.
@@ -1684,7 +1684,7 @@ Any disputes arising under this Policy shall be subject to the jurisdiction of t
 at Gautam Buddha Nagar, Uttar Pradesh, unless otherwise required by applicable law.
 17. Contact Us
 For cancellation requests or related questions, please contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Registered / Principal Business Address:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -1699,9 +1699,9 @@ When contacting us, please include:
 The Company reserves the right to modify or update this Cancellation Policy at any time.
 The latest version published on the Company's official website shall apply to all future orders.`,
   'cookie': `COOKIE POLICY
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 This Cookie Policy explains how cookies and similar technologies are used when you visit
 www.fvppurepick.com ("Website").
@@ -1713,7 +1713,7 @@ This Cookie Policy should be read together with our:
 - Shipping & Delivery Policy
 - Return, Refund & Replacement Policy
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the wholesale trading,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the wholesale trading,
 procurement, storage, distribution, import, export, and supply of agricultural products and food
 commodities in accordance with its registered business objects.
 The Company operates from Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida
@@ -1838,7 +1838,7 @@ We may update this Cookie Policy from time to time to reflect:
 The latest version published on our Website will apply from its effective date.
 13. Contact Us
 If you have any questions regarding this Cookie Policy, please contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Registered Office:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -1853,9 +1853,9 @@ and accepted this Cookie Policy.
 If you do not agree with this Policy, you should discontinue use of the Website or configure your
 browser to manage or disable cookies as appropriate.`,
   'disclaimer': `DISCLAIMER
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. General Disclaimer
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 This Disclaimer governs the use of our website, products, services, quotations, catalogues,
 marketing materials, and all information made available through our official communication
@@ -1863,7 +1863,7 @@ channels.
 By accessing our website or purchasing products from us, you acknowledge that you have read,
 understood, and accepted this Disclaimer.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the procurement,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the procurement,
 wholesale trading, storage, distribution, import, export, and supply of agricultural commodities,
 vegetables, food products, and related goods in accordance with its registered business objects.
 The Company operates from its registered business premises at Office No. 14122, 14th Floor,
@@ -2006,7 +2006,7 @@ Any disputes shall be subject to the jurisdiction of the competent courts at Gau
 Nagar, Uttar Pradesh, unless otherwise required by law.
 17. Contact Information
 For questions regarding this Disclaimer, please contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Registered Office:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -2021,9 +2021,9 @@ understood, and agreed to this Disclaimer.
 If you do not agree with this Disclaimer, you should discontinue use of the Website.
 End of Disclaimer`,
   'quality': `QUALITY ASSURANCE POLICY
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 At FVP PUREPICK, quality is a fundamental part of our business. We are committed to
 supplying agricultural products that meet agreed commercial specifications while maintaining
@@ -2033,7 +2033,7 @@ practices, and responsibilities applicable to products supplied by the Company.
 By purchasing products from us, customers acknowledge and agree to the provisions of this
 Policy.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the procurement,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the procurement,
 wholesale trading, storage, distribution, import, export, and supply of agricultural commodities
 and food products as permitted under its registered business objects.
 The Company is registered under GST and operates as a Micro Enterprise under the Udyam
@@ -2184,7 +2184,7 @@ The Company strives to conduct its operations in accordance with applicable Indi
 relevant commercial standards governing its products and business activities.
 19. Contact Information
 For quality-related enquiries or complaints, please contact:
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Registered Office:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -2194,15 +2194,15 @@ The Company may amend this Quality Assurance Policy from time to time to reflect
 business operations, quality procedures, or applicable legal requirements.
 The latest version published on the Company's official website shall apply.
 21. Acceptance
-By purchasing products or using the services of FVP PUREPICK SUPPLIERS (OPC) PRIVATE
+By purchasing products or using the services of FVP PUREPICK SUPPLIERS PRIVATE
 LIMITED, customers acknowledge that they have read, understood, and accepted this Quality
 Assurance Policy.
 End of Quality Assurance Policy`,
   'export': `EXPORT & INTERNATIONAL ORDERS
 POLICY
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 1. Introduction
-Welcome to FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED ("Company", "FVP
+Welcome to FVP PUREPICK SUPPLIERS PRIVATE LIMITED ("Company", "FVP
 PUREPICK", "We", "Our", or "Us").
 This Export & International Orders Policy explains the terms and conditions governing
 international sales, export transactions, overseas shipments, customs documentation, delivery
@@ -2214,7 +2214,7 @@ has been executed between the Company and the buyer.
 By placing an international order, the customer acknowledges that they have read, understood,
 and agreed to this Policy.
 2. About the Company
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED is engaged in the procurement,
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED is engaged in the procurement,
 wholesale trading, storage, distribution, import, export, and supply of agricultural commodities,
 vegetables, food products, spices, grains, pulses, pickles, and related products in accordance
 with its registered business objects.
@@ -2390,7 +2390,7 @@ in accordance with the Arbitration and Conciliation Act, 1996.
 Subject to applicable law and any arbitration agreement, the competent courts at Gautam
 Buddha Nagar, Uttar Pradesh, India, shall have jurisdiction.
 21. Contact Information
-FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED
+FVP PUREPICK SUPPLIERS PRIVATE LIMITED
 Email: care@fvppurepick.com
 Registered Office:
 Office No. 14122, 14th Floor, Gaur City Mall, Greater Noida West, Gautam Buddha Nagar, Uttar
@@ -2400,7 +2400,7 @@ The Company reserves the right to amend or update this Export & International Or
 any time. The latest version published on the Company's official website shall apply to future
 export transactions.
 23. Acceptance
-By placing an international order with FVP PUREPICK SUPPLIERS (OPC) PRIVATE LIMITED,
+By placing an international order with FVP PUREPICK SUPPLIERS PRIVATE LIMITED,
 the customer confirms that they have read, understood, and agreed to this Export &
 International Orders Policy.
 End of Export & International Orders Policy`
