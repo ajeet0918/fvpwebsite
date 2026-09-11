@@ -138,6 +138,14 @@ export async function fetchPortalSummaryApi() {
   return response.data;
 }
 
+export async function downloadPortalReceiptApi(receiptNumber: string) {
+  const response = await portalApiClient.get<Blob>(
+    `/portal/receipts/${encodeURIComponent(receiptNumber)}/download`,
+    { responseType: "blob" }
+  );
+  return response.data;
+}
+
 export async function fetchCustomerProfileApi() {
   const response = await customerApiClient.get<CustomerProfile>("/customer/me");
   return response.data;
