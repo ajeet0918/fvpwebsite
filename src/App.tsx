@@ -21,11 +21,6 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/join-us" element={<JoinUsPage />} />
         <Route path="/portal/login" element={<PortalLoginPage />} />
-        <Route path="/portal/*" element={<PortalDashboardPage />} />
-        <Route path="/partner/login" element={<PartnerLoginPage />} />
-        <Route path="/partner/activate" element={<PartnerActivatePage />} />
-        <Route path="/partner/reset-password" element={<PartnerResetPasswordPage />} />
-        <Route path="/partner" element={<PartnerDashboardPage />} />
         <Route path="/policies" element={<PoliciesPage />} />
         <Route path="/investor" element={<Navigate to="/join-us?type=investor" replace />} />
         <Route path="/farmer" element={<Navigate to="/join-us?type=farmer" replace />} />
@@ -38,6 +33,11 @@ export default function App() {
         <Route path="/products" element={<Navigate to="/shop" replace />} />
         <Route path="/contact" element={<Navigate to="/#contact" replace />} />
       </Route>
+      <Route path="/portal/*" element={<PortalDashboardPage />} />
+      <Route path="/partner/login" element={<PartnerLoginPage />} />
+      <Route path="/partner/activate" element={<PartnerActivatePage />} />
+      <Route path="/partner/reset-password" element={<PartnerResetPasswordPage />} />
+      <Route path="/partner" element={<PartnerDashboardPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

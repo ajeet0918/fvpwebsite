@@ -5,7 +5,11 @@ import {
   readErrorMessage,
   requestPortalPasswordResetApi
 } from "../lib/api";
-import { setPortalAccessToken, setPortalPasswordResetRequired } from "../lib/portalAuth";
+import {
+  setPortalAccessToken,
+  setPortalIdentity,
+  setPortalPasswordResetRequired
+} from "../lib/portalAuth";
 
 export function PartnerLoginPage() {
   const [searchParams] = useSearchParams();
@@ -32,6 +36,7 @@ export function PartnerLoginPage() {
         password
       });
       setPortalAccessToken(response.accessToken);
+      setPortalIdentity(response.username, response.userType);
       setPortalPasswordResetRequired(response.resetPassword);
       if (response.resetPassword) {
         navigate("/partner/reset-password", { replace: true });
@@ -66,22 +71,35 @@ export function PartnerLoginPage() {
   }
 
   return (
-    <section className="auth-page auth-page-partner">
-      <div className="container auth-container">
-        <div className="auth-shell">
-          <div className="auth-brand">
-            <Link className="auth-logo" to="/" aria-label="FVP Purepick home">
-              <img src="/assets/logofvp.jpeg" alt="" />
-            </Link>
-            <span>FVP Purepick</span>
+    <main className="partner-login-page">
+      <aside className="partner-login-story" aria-label="FVP Purepick Partner Portal">
+        <Link className="partner-login-brand" to="/" aria-label="FVP Purepick home">
+          <img src="/assets/logofvp.jpeg" alt="FVP Purepick logo" />
+          <span>
+            <strong>FVP Purepick</strong>
+            <small>Partner portal</small>
+          </span>
+        </Link>
+        <div className="partner-login-story-copy">
+          <span className="partner-login-kicker">Trusted partner access</span>
+          <h1>Partnership,<br />accounted for.</h1>
+          <p>One secure place to review your FVP relationship, linked records, returns, and payouts.</p>
+          <div className="partner-login-roles" aria-label="Supported partner accounts">
+            <span>Farmer</span>
+            <span>Investor</span>
+            <span>Collection hub</span>
           </div>
+        </div>
+        <p className="partner-login-assurance">Protected access for approved FVP partners</p>
+      </aside>
 
-          <div className="auth-surface auth-card">
-            <div className="auth-heading">
-              <span className="auth-kicker">Partner portal</span>
-              <h1>Partner sign in</h1>
-              <p>Access approved farmer, investor, and collection partner tools.</p>
-            </div>
+      <section className="partner-login-panel">
+        <div className="partner-login-card">
+          <div className="partner-login-heading">
+            <span className="partner-login-kicker">Partner portal</span>
+            <h2>Welcome back</h2>
+            <p>Sign in with your registered username, email address, or mobile number.</p>
+          </div>
 
             <form className="auth-form" onSubmit={handleLogin}>
               <div className="auth-field-stack">
@@ -92,6 +110,7 @@ export function PartnerLoginPage() {
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
                     autoComplete="username"
+                    placeholder="Username, email, or mobile"
                     required
                   />
                 </label>
@@ -127,29 +146,25 @@ export function PartnerLoginPage() {
                 </label>
               </div>
               <button type="submit" className="button button-primary auth-submit" disabled={loading}>
-                {loading ? "Signing in..." : "Login"}
+                {loading ? "Signing in..." : "Sign in to partner portal"}
               </button>
             </form>
 
-            <form className="auth-reset-form" onSubmit={handleReset}>
-              <div className="auth-reset-heading">
-                <h2>Forgot password?</h2>
-                <span>We will send recovery instructions to the registered email on file.</span>
-              </div>
-              <button type="submit" className="button button-secondary" disabled={resetting}>
-                {resetting ? "Sending..." : "Send Temporary Password"}
-              </button>
-            </form>
+          <form className="partner-login-help" onSubmit={handleReset}>
+            <button type="submit" disabled={resetting}>
+              {resetting ? "Sending recovery instructions..." : "Forgot password?"}
+            </button>
+            <Link to="/partner/activate">Activation or reset help</Link>
+          </form>
 
-            {message ? <p className="form-message" role="status" aria-live="polite">{message}</p> : null}
+          {message ? <p className="partner-login-message" role="status" aria-live="polite">{message}</p> : null}
 
-            <div className="auth-footer-switch">
-              <span>Shopping or tracking an order?</span>
-              <Link to="/portal/login">Use customer login</Link>
-            </div>
+          <div className="partner-login-switch">
+            <span>Shopping or tracking an order?</span>
+            <Link to="/portal/login">Use customer login</Link>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
